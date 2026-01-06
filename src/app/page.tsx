@@ -5,10 +5,10 @@ const courses = [
   {
     id: 1,
     title: 'Йога',
-    duration: '23 дней',
-    timePerDay: '30-50 мин/день',
-    category: 'Йога',
-    difficulty: 'Сложность: Начальный',
+    duration: '25 дней',
+    timePerDay: '20-50 мин/день',
+    category: '',
+    difficulty: 'Сложность',
     image: '/images/yoga.jpg',
   },
   {
@@ -16,8 +16,8 @@ const courses = [
     title: 'Стретчинг',
     duration: '25 дней',
     timePerDay: '30-50 мин/день',
-    category: 'Стретчинг',
-    difficulty: 'Сложность: Начальный',
+    category: '',
+    difficulty: 'Сложность',
     image: '/images/stretching.jpg',
   },
   {
@@ -25,8 +25,8 @@ const courses = [
     title: 'Фитнес',
     duration: '25 дней',
     timePerDay: '30-50 мин/день',
-    category: 'Фитнес',
-    difficulty: 'Сложность: Средний',
+    category: '',
+    difficulty: 'Сложность',
     image: '/images/fitness.jpg',
   },
   {
@@ -34,8 +34,8 @@ const courses = [
     title: 'Степ-аэробика',
     duration: '22 дней',
     timePerDay: '30-50 мин/день',
-    category: 'Кардио',
-    difficulty: 'Сложность: Средний',
+    category: '',
+    difficulty: 'Сложность',
     image: '/images/step-aerobics.jpg',
   },
   {
@@ -43,8 +43,8 @@ const courses = [
     title: 'Бодифлекс',
     duration: '25 дней',
     timePerDay: '30-50 мин/день',
-    category: 'Дыхание',
-    difficulty: 'Сложность: Начальный',
+    category: '',
+    difficulty: 'Сложность',
     image: '/images/bodyflex.jpg',
   },
 ];

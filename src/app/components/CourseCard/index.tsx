@@ -27,37 +27,58 @@ export default function CourseCard({
         <Image
           src={image}
           alt={title}
-          fill
+          width={360}
+          height={325}
           className={styles.image}
-          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          priority
         />
-        <div className={styles.imageOverlay}>
-          <h3 className={styles.courseTitle}>{title}</h3>
-        </div>
+        <Image
+          src="/img/Add-in-Circle.svg"
+          alt="Добавить"
+          width={28}
+          height={28}
+          className={styles.addIcon}
+        />
       </div>
-      
+
       <div className={styles.courseContent}>
         <div className={styles.courseInfo}>
           <div className={styles.infoLeft}>
-            <h4>{title}</h4>
-            <p className={styles.duration}>• {duration}</p>
-            <p className={styles.timePerDay}>• {timePerDay}</p>
+            <h4 className={styles.courseTitleText}>{title}</h4>
+            <div className={styles.inlineInfo}>
+              <Image
+                src="/img/Calendar.svg"
+                alt="Календарь"
+                width={20}
+                height={20}
+              />
+              <span className={styles.courseParam}>{duration}</span>
+              <Image
+                src="/img/Icon.svg"
+                alt="Время"
+                width={20}
+                height={20}
+                style={{ marginLeft: '16px' }}
+              />
+              <span className={styles.courseParam}>{timePerDay}</span>
+            </div>
           </div>
         </div>
-        
+
         <div>
-          <span className={styles.categoryTag}>
-            {category}
-          </span>
+          <span className={styles.categoryTag}>{category}</span>
         </div>
-        
+
         <div className={styles.difficultyTag}>
-          {difficulty}
+          <Image
+            src="/img/mingcute_signal-fill.svg"
+            alt="Сложность"
+            width={20}
+            height={20}
+            style={{ marginRight: '8px' }}
+          />
+          <span className={styles.courseParam}>{difficulty}</span>
         </div>
-        
-        <button className={styles.startButton}>
-          Начать курс
-        </button>
       </div>
     </div>
   );
