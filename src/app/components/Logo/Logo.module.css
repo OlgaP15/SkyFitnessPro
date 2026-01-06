@@ -1,0 +1,25 @@
+.logoWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 50px; /* Отступ от верхнего края */
+}
+
+.logoSubtitle {
+  font-size: 15px;
+  color: #6b7280;
+  margin-top: 15px; /* Увеличено расстояние между логотипом и текстом */
+  margin-left: 2px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.logo img {
+  height: auto;
+  width: auto;
+  max-height: 40px;
+}

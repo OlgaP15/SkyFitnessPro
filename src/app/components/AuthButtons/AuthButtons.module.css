@@ -1,0 +1,48 @@
+.authButtons {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.loginButton {
+  color: #4b5563;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.loginButton:hover {
+  color: #2563eb;
+}
+
+.registerButton {
+  background-color: #2563eb;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.registerButton:hover {
+  background-color: #1d4ed8;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.userName {
+  color: #4b5563;
+}
+
+.profileButton {
+  color: #2563eb;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.profileButton:hover {
+  color: #1d4ed8;
+}

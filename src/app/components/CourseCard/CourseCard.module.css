@@ -1,0 +1,110 @@
+.courseCard {
+  width: 360px;
+  height: 501px;
+  background: #ffffff;
+  border-radius: 30px;
+  box-shadow: 0px 4px 67px -12px #00000021;
+  opacity: 1;
+  padding-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow: hidden;
+  transition: box-shadow 0.3s;
+}
+
+.courseCard:hover {
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.courseImage {
+  height: 192px;
+  position: relative;
+  overflow: hidden;
+}
+
+.image {
+  object-fit: cover;
+  object-position: center;
+}
+
+.imageOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+  padding: 16px;
+}
+
+.courseTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  margin: 0;
+}
+
+.courseContent {
+  padding: 1.5rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.courseInfo {
+  margin-bottom: 1rem;
+}
+
+.infoLeft h4 {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.duration {
+  color: #4b5563;
+  margin-bottom: 0.25rem;
+}
+
+.timePerDay {
+  color: #4b5563;
+}
+
+.categoryTag {
+  display: inline-block;
+  background-color: #f3f4f6;
+  color: #374151;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+}
+
+.difficultyTag {
+  display: inline-block;
+  background-color: #e5e7eb;
+  color: #4b5563;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.startButton {
+  width: 100%;
+  background: linear-gradient(to right, #3b82f6, #7c3aed);
+  color: white;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: auto;
+}
+
+.startButton:hover {
+  background: linear-gradient(to right, #1d4ed8, #6d28d9);
+}
