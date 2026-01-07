@@ -1,0 +1,52 @@
+.promoBanner {
+  width: 280px;
+  height: 102px;
+  background: #BCEC30;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  left: 1011px;
+  opacity: 1;
+  transform: rotate(0deg);
+  box-shadow: 0 4px 12px rgba(188, 236, 48, 0.2);
+}
+
+.bannerContent {
+  padding: 16px;
+}
+
+.bannerTitle {
+  font-family: Roboto;
+  font-weight: 400;
+  font-size: 32px;
+  line-height: 110.00000000000001%;
+  letter-spacing: 0px;;
+}
+
+.bannerSubtitle {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  color: #4b5563;
+  opacity: 0.9;
+}
+
+.polygonContainer {
+  position: absolute;
+  top: 85px; 
+  left: calc(50% - 15.12px); 
+  width: 30.24px;
+  height: 35.17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.polygon {
+  width: 30.24px !important;
+  height: 35.17px !important;
+  opacity: 1;
+  object-fit: contain;
+}

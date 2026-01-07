@@ -8,8 +8,13 @@ export default function Navigation() {
   return (
     <nav className={styles.nav}>
       <div className={styles.navContainer}>
-        <Logo />
-        <AuthButtons />
+        <div className={styles.headerContent}>
+          <Logo />
+          <AuthButtons />
+        </div>
+        <span className={styles.subtitle}>
+          Онлайн-тренировки для занятий дома
+        </span>
       </div>
     </nav>
   );

@@ -6,15 +6,21 @@
   gap: 40px;
   margin-left: 140px;
 }
+
 .mainContainer {
-  min-height: calc(100vh - 64px);
+  width: 1440px;
+  height: 1559px;
   background-color: #f9fafb;
+  opacity: 1;
+  transform: rotate(0deg);
+  margin: 0 auto;
+  position: relative;
 }
 
 .heading {
   width: 947px;
   height: 120px;
-  margin: 60px 0 50px 140px;
+  margin: 60px 0 50px;
   font-family: 'Roboto', Arial, sans-serif;
   font-weight: 500;
   font-style: normal;
@@ -24,6 +30,12 @@
   color: #1f2937;
   opacity: 1;
   text-align: left;
+}
+
+.headingContainer {
+  display: flex;
+  align-items: center;
+  margin: 0px 0 0px 140px;
 }
 
 .coursesLink {
@@ -36,4 +48,56 @@
   font-size: 18px;
   font-weight: 500;
   margin-top: 32px;
+}
+
+.scrollToTop {
+  position: absolute;
+  padding-top: 34px;
+  left: 656px;
+  width: 127px;
+  height: 52px;
+  opacity: 1;
+  transform: rotate(0deg);
+}
+
+.topButton {
+  width: 127px;
+  height: 52px;
+  background: #BCEC30;
+  border-radius: 46px;
+  padding: 16px 26px;
+  gap: 8px;
+  opacity: 1;
+  transform: rotate(0deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.topButton:hover {
+  background: #a5d42a; /* Немного темнее при наведении */
+}
+
+/* Текст внутри кнопки */
+.buttonText {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 18px;
+  line-height: 110%;
+  letter-spacing: 0px;
+  color: #4b5563; /* Серый цвет текста как в макете */
+  opacity: 1;
+  white-space: nowrap;
+}
+
+/* Стрелка внутри кнопки */
+.arrow {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 18px;
+  line-height: 1;
 }

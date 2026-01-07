@@ -9,16 +9,13 @@ export default function Logo() {
     <div className={styles.logoWrapper}>
       <Link href="/" className={styles.logo}>
         <Image
-          src="/img/logo.png" // Ваш логотип
+          src="/img/logo.png" 
           alt="SkyFitnessPro"
           width={220}
           height={35}
           priority
         />
       </Link>
-      <span className={styles.logoSubtitle}>
-        Онлайн-тренировки для занятий дома
-      </span>
     </div>
   );
 }
