@@ -23,9 +23,46 @@
 }
 .inlineInfo {
   display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   margin-bottom: 6px;
+}
+
+.durationTag {
+  display: flex;
+  align-items: center;
+  width: 103px;
+  height: 38px;
+  background: hsla(0, 0%, 97%, 1);
+  padding: 10px;
+  border-radius: 50px;
+  gap: 6px;
+  opacity: 1;
+  transform: rotate(0deg);
+}
+
+.durationText {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 110%;
+  color: hsla(0, 0%, 13%, 1);
+}
+
+.timeTag {
+  display: flex;
+  align-items: center;
+  width: 163px;
+  height: 38px;
+  background: hsla(0, 0%, 97%, 1);
+  padding: 10px;
+  border-radius: 50px;
+  gap: 6px;
+  opacity: 1;
+  transform: rotate(0deg);
 }
 .addIcon {
   position: absolute;
@@ -89,46 +126,30 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  border-radius: 30px;
+}
 
-  .timePerDay {
-    color: #4b5563;
-  }
+.categoryTag {
+  display: inline-block;
+  background-color: #f3f4f6;
+  color: #374151;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+}
 
-  .categoryTag {
-    display: inline-block;
-    background-color: #f3f4f6;
-    color: #374151;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.875rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .difficultyTag {
-    display: inline-block;
-    background-color: #e5e7eb;
-    color: #4b5563;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.875rem;
-    margin-bottom: 1rem;
-  }
-
-  .startButton {
-    width: 100%;
-    background: linear-gradient(to right, #3b82f6, #7c3aed);
-    color: white;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-top: auto;
-  }
-
-  .startButton:hover {
-    background: linear-gradient(to right, #1d4ed8, #6d28d9);
-  }
-  border-radius: 0 0 30px 30px;
+.difficultyTag {
+  display: flex;
+  align-items: center;
+  width: 129px;
+  height: 38px;
+  background-color: #f7f7f7;
+  color: #4b5563;
+  padding: 10px;
+  border-radius: 50px;
+  gap: 6px;
+  opacity: 1;
+  transform: rotate(0deg);
+  font-size: 0.875rem;
 }

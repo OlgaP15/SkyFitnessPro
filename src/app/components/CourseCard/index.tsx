@@ -35,8 +35,8 @@ export default function CourseCard({
         <Image
           src="/img/Add-in-Circle.svg"
           alt="Добавить"
-          width={28}
-          height={28}
+          width={32}
+          height={32}
           className={styles.addIcon}
         />
       </div>
@@ -46,38 +46,34 @@ export default function CourseCard({
           <div className={styles.infoLeft}>
             <h4 className={styles.courseTitleText}>{title}</h4>
             <div className={styles.inlineInfo}>
-              <Image
-                src="/img/Calendar.svg"
-                alt="Календарь"
-                width={20}
-                height={20}
-              />
-              <span className={styles.courseParam}>{duration}</span>
-              <Image
-                src="/img/Icon.svg"
-                alt="Время"
-                width={20}
-                height={20}
-                style={{ marginLeft: '16px' }}
-              />
-              <span className={styles.courseParam}>{timePerDay}</span>
+              <div className={styles.durationTag}>
+                <Image
+                  src="/img/Calendar.svg"
+                  alt="Календарь"
+                  width={18}
+                  height={18}
+                />
+                <span className={styles.durationText}>{duration}</span>
+              </div>
+              <div className={styles.timeTag}>
+                <Image src="/img/Icon.svg"
+                  alt="Время"
+                  width={18} 
+                  height={18} 
+                />
+                <span className={styles.courseParam}>{timePerDay}</span>
+              </div>
+              <div className={styles.difficultyTag}>
+                <Image
+                  src="/img/mingcute_signal-fill.svg"
+                  alt="Сложность"
+                  width={18}
+                  height={18}
+                />
+                <span className={styles.courseParam}>{difficulty}</span>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div>
-          <span className={styles.categoryTag}>{category}</span>
-        </div>
-
-        <div className={styles.difficultyTag}>
-          <Image
-            src="/img/mingcute_signal-fill.svg"
-            alt="Сложность"
-            width={20}
-            height={20}
-            style={{ marginRight: '8px' }}
-          />
-          <span className={styles.courseParam}>{difficulty}</span>
         </div>
       </div>
     </div>

@@ -1,30 +1,12 @@
 import {
   trackSliceReducer,
-  setCurrentTrack,
-  setIsPlay,
-  setCurrentPlaylist,
-  toggleFavorite,
-  loadFavoriteTracks,
+  setTracks,
+  setLoading,
+  setError,
 } from '../trackSlice';
-import { TrackTypes } from '@/SharedTypes/sharedTypes';
-
-const localStorageMock = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
-};
-
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock,
-});
+import { TrackTypes } from '../trackSlice';
 
 describe('trackSlice', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    localStorageMock.clear();
-  });
-
   const mockTrack: TrackTypes = {
     _id: 1,
     name: 'Тестовый трек',
@@ -53,78 +35,39 @@ describe('trackSlice', () => {
 
   it('должен возвращать начальное состояние', () => {
     const state = trackSliceReducer(undefined, { type: 'unknown' });
-    expect(state.currentTrack).toBeNull();
-    expect(state.isPlay).toBe(false);
-    expect(state.favoriteTracks).toEqual([]);
-    expect(state.favoriteTracksIds).toEqual([]);
+    expect(state.tracks).toEqual([]);
+    expect(state.loading).toBe(false);
+    expect(state.error).toBeNull();
   });
 
-  it('должен устанавливать текущий трек', () => {
-    const state = trackSliceReducer(undefined, setCurrentTrack(mockTrack));
-    expect(state.currentTrack).toEqual(mockTrack);
-  });
-
-  it('должен устанавливать состояние воспроизведения', () => {
-    const state = trackSliceReducer(undefined, setIsPlay(true));
-    expect(state.isPlay).toBe(true);
-  });
-
-  it('должен устанавливать текущий плейлист', () => {
+  it('должен устанавливать треки', () => {
     const tracks = [mockTrack, mockTrack2];
-    const state = trackSliceReducer(undefined, setCurrentPlaylist(tracks));
-    expect(state.currentPlaylist).toEqual(tracks);
+    const state = trackSliceReducer(undefined, setTracks(tracks));
+    expect(state.tracks).toEqual(tracks);
+    expect(state.tracks).toHaveLength(2);
   });
 
-  it('должен добавлять трек в избранное', () => {
-    const state = trackSliceReducer(undefined, toggleFavorite(mockTrack));
-
-    expect(state.favoriteTracks).toContainEqual(mockTrack);
-    expect(state.favoriteTracksIds).toContain('1');
-    expect(localStorageMock.setItem).toHaveBeenCalledWith(
-      'favoriteTracks',
-      JSON.stringify([mockTrack]),
-    );
-    expect(localStorageMock.setItem).toHaveBeenCalledWith(
-      'favoriteTracksIds',
-      JSON.stringify(['1']),
-    );
+  it('должен устанавливать состояние загрузки', () => {
+    const state = trackSliceReducer(undefined, setLoading(true));
+    expect(state.loading).toBe(true);
+    
+    const state2 = trackSliceReducer(state, setLoading(false));
+    expect(state2.loading).toBe(false);
   });
 
-  it('должен удалять трек из избранного', () => {
+  it('должен устанавливать ошибку', () => {
+    const errorMessage = 'Ошибка загрузки треков';
+    const state = trackSliceReducer(undefined, setError(errorMessage));
+    expect(state.error).toBe(errorMessage);
+  });
+
+  it('должен очищать ошибку', () => {
     const initialState = {
-      currentTrack: null,
-      isPlay: false,
-      currentPlaylist: [],
-      shuffle: false,
-      repeat: false,
-      shuffledPlaylist: [],
-      currentIndex: -1,
-      allTracks: [],
-      fetchError: null,
-      fetchIsLoading: false,
-      favoriteTracks: [mockTrack],
-      favoriteTracksIds: ['1'],
-      filteredFavoriteTracks: [],
-      favoriteLoading: false,
+      tracks: [],
+      loading: false,
+      error: 'Предыдущая ошибка',
     };
-
-    const state = trackSliceReducer(initialState, toggleFavorite(mockTrack));
-
-    expect(state.favoriteTracks).not.toContainEqual(mockTrack);
-    expect(state.favoriteTracksIds).not.toContain('1');
-  });
-
-  it('должен загружать избранные треки из localStorage', () => {
-    const favoriteTracks = [mockTrack];
-    localStorageMock.getItem.mockImplementation((key) => {
-      if (key === 'favoriteTracks') return JSON.stringify(favoriteTracks);
-      if (key === 'favoriteTracksIds') return JSON.stringify(['1']);
-      return null;
-    });
-
-    const state = trackSliceReducer(undefined, loadFavoriteTracks());
-
-    expect(state.favoriteTracks).toEqual(favoriteTracks);
-    expect(state.favoriteTracksIds).toEqual(['1']);
+    const state = trackSliceReducer(initialState, setError(null));
+    expect(state.error).toBeNull();
   });
 });

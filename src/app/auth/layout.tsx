@@ -13,7 +13,7 @@ interface AuthLayoutProps {
 export default function AuthLayout({ children }: AuthLayoutProps) {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { isAuth } = useAppSelector((state: { auth: unknown; }) => state.auth);
+  const { isAuth } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     dispatch(restoreSession());
@@ -29,9 +29,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
     <div className={styles.wrapper}>
       <div className={styles.containerEnter}>
         <div className={styles.modal__block}>
-          <div className={styles.modal__form}>
-            {children}
-          </div>
+          <div className={styles.modal__form}>{children}</div>
         </div>
       </div>
     </div>

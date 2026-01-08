@@ -1,10 +1,10 @@
+import type { NextConfig } from 'next';
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConfig: NextConfig = {
   images: {
     unoptimized: process.env.NODE_ENV === 'development',
   },
   reactStrictMode: true,
-}
+};
 
-module.exports = nextConfig
+export default nextConfig;
