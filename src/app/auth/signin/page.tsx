@@ -56,19 +56,19 @@ export default function Signin() {
       <Link href="/">
         <div className={styles.modal__logo}>
           <Image
-            src="/img/logo_modal.png"
-            alt="logo"
-            width={140}
-            height={21}
+            src="/img/logo.svg"
+            alt="SkyFitnessPro"
+            width={220}
+            height={35}
             priority
           />
         </div>
       </Link>
       <form onSubmit={handleLogin} className={styles.modal__form}>
         <input
-          className={classNames(styles.modal__input, styles.login)}
-          type="email"
-          placeholder="Почта"
+          className={classNames(styles.modal__input)}
+          type="text"
+          placeholder="Логин"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required

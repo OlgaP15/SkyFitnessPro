@@ -61,11 +61,11 @@ export default function Signup() {
     <>
       <Link href="/">
         <div className={styles.modal__logo}>
-          <Image 
-            src="/img/logo_modal.png" 
-            alt="logo" 
-            width={140} 
-            height={21} 
+          <Image
+            src="/img/logo.svg"
+            alt="SkyFitnessPro"
+            width={220}
+            height={35}
             priority
           />
         </div>
@@ -74,16 +74,7 @@ export default function Signup() {
         <input
           className={classNames(styles.modal__input, styles.login)}
           type="text"
-          placeholder="Имя пользователя"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-          disabled={loading}
-        />
-        <input
-          className={classNames(styles.modal__input)}
-          type="email"
-          placeholder="Почта"
+          placeholder="Эл. почта"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -122,7 +113,7 @@ export default function Signup() {
         className={styles.modal__btnSignup}
         onClick={(e) => loading && e.preventDefault()}
       >
-        Уже есть аккаунт? Войти
+        Войти
       </Link>
     </>
   );

@@ -15,24 +15,34 @@
 .modal__block {
     position: absolute;
     z-index: 2;
-    left: calc(50% - (366px / 2));
-    top: calc(50% - (439px / 2));
     opacity: 1;
 }
 
-.modal__form {
-    width: 366px;
+/* Стили для формы входа */
+.modal__form.signin {
+    width: 360px;
+    height: 425px;
     background-color: #ffffff;
-    border-radius: 12px;
-    display: -webkit-box;
-    display: -ms-flexbox;
+    border-radius: 30px;
     display: flex;
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
-    -ms-flex-direction: column;
     flex-direction: column;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
     align-items: center;
-    padding: 43px 44px 47px 40px;
+    padding: 40px;
+    box-sizing: border-box;
+    box-shadow: 0px 4px 67px -12px rgba(0, 0, 0, 0.13);
 }
+
+/* Стили для формы регистрации */
+.modal__form.signup {
+    width: 360px;
+    height: 487px;
+    background-color: #ffffff;
+    border-radius: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    box-sizing: border-box;
+    box-shadow: 0px 4px 67px -12px rgba(0, 0, 0, 0.13);
+}
+    
