@@ -1,0 +1,210 @@
+.coursePage {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  
+  .heroSection {
+    margin-bottom: 40px;
+  }
+  
+  .heroImage {
+    position: relative;
+    width: 100%;
+    height: 500px;
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  
+  .image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .heroOverlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    padding: 40px;
+    color: white;
+  }
+  
+  .courseTitle {
+    font-size: 48px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  
+  .courseDescription {
+    font-size: 20px;
+    opacity: 0.9;
+    max-width: 800px;
+  }
+  
+  .contentContainer {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 60px;
+  }
+  
+  .mainContent {
+    flex: 2;
+  }
+  
+  .section {
+    margin-bottom: 40px;
+  }
+  
+  .section h2 {
+    font-size: 32px;
+    margin-bottom: 20px;
+    color: #1f2937;
+  }
+  
+  .section p {
+    font-size: 18px;
+    line-height: 1.6;
+    color: #4b5563;
+  }
+  
+  .benefitsList {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .benefitItem {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 18px;
+  }
+  
+  .checkmark {
+    color: #BCEC30;
+    font-weight: bold;
+    margin-right: 12px;
+    font-size: 20px;
+  }
+  
+  .programDetails {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+  }
+  
+  .programItem {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: #f9fafb;
+    border-radius: 12px;
+  }
+  
+  .programItem h4 {
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    color: #1f2937;
+  }
+  
+  .programItem p {
+    margin: 0;
+    color: #6b7280;
+  }
+  
+  .sidebar {
+    flex: 1;
+  }
+  
+  .instructorCard {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    margin-bottom: 24px;
+  }
+  
+  .instructorCard h3 {
+    font-size: 24px;
+    margin-bottom: 16px;
+    color: #1f2937;
+  }
+  
+  .instructorInfo h4 {
+    font-size: 20px;
+    margin-bottom: 8px;
+    color: #2563eb;
+  }
+  
+  .startCourseButton {
+    width: 100%;
+    background: linear-gradient(to right, #3b82f6, #7c3aed);
+    color: white;
+    padding: 18px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-bottom: 24px;
+  }
+  
+  .startCourseButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+  }
+  
+  .courseStats {
+    display: flex;
+    justify-content: space-between;
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+  
+  .stat {
+    text-align: center;
+  }
+  
+  .statNumber {
+    display: block;
+    font-size: 28px;
+    font-weight: 700;
+    color: #1f2937;
+  }
+  
+  .statLabel {
+    font-size: 14px;
+    color: #6b7280;
+  }
+  
+  .notFound {
+    text-align: center;
+    padding: 100px 20px;
+    font-size: 24px;
+    color: #6b7280;
+  }
+  
+  /* Адаптивность */
+  @media (max-width: 768px) {
+    .contentContainer {
+      flex-direction: column;
+    }
+    
+    .heroImage {
+      height: 300px;
+    }
+    
+    .courseTitle {
+      font-size: 32px;
+    }
+    
+    .courseDescription {
+      font-size: 16px;
+    }
+  }

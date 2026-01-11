@@ -15,7 +15,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuth } = useAppSelector((state: { auth: any; }) => state.auth);
+  const { isAuth } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     dispatch(restoreSession());
@@ -29,7 +29,6 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
 
   // Определяем тип формы (вход или регистрация)
   const isSignin = pathname === '/auth/signin';
-  const isSignup = pathname === '/auth/signup';
   
   // Рассчитываем позицию модального окна в зависимости от его высоты
   const modalHeight = isSignin ? 425 : 487;

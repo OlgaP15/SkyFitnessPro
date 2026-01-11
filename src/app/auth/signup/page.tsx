@@ -15,7 +15,7 @@ export default function Signup() {
   const router = useRouter();
   const { error, loading } = useAppSelector((state) => state.auth);
   const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
+  const [username ] = useState('');
   const [password, setPassword] = useState('');
   const [repeat, setRepeat] = useState('');
 

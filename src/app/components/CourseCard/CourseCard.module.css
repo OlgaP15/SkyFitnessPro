@@ -153,3 +153,9 @@
   transform: rotate(0deg);
   font-size: 0.875rem;
 }
+
+.courseCardLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}

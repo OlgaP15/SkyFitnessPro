@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import styles from './CourseCard.module.css';
 
 interface CourseCardProps {
@@ -14,6 +15,7 @@ interface CourseCardProps {
 }
 
 export default function CourseCard({
+  id,
   title,
   duration,
   timePerDay,
@@ -22,60 +24,65 @@ export default function CourseCard({
   image,
 }: CourseCardProps) {
   return (
-    <div className={styles.courseCard}>
-      <div className={styles.courseImage}>
-        <Image
-          src={image}
-          alt={title}
-          width={360}
-          height={325}
-          className={styles.image}
-          priority
-        />
-        <Image
-          src="/img/Add-in-Circle.svg"
-          alt="Добавить"
-          width={32}
-          height={32}
-          className={styles.addIcon}
-        />
-      </div>
+    <Link href={`/courses/${id}`} className={styles.courseCardLink}>
+      <div className={styles.courseCard}>
+        <div className={styles.courseImage}>
+          <Image
+            src={image}
+            alt={title}
+            width={360}
+            height={325}
+            className={styles.image}
+            priority
+          />
+          <Image
+            src="/img/Add-in-Circle.svg"
+            alt="Добавить"
+            width={28}
+            height={28}
+            className={styles.addIcon}
+          />
+        </div>
 
-      <div className={styles.courseContent}>
-        <div className={styles.courseInfo}>
-          <div className={styles.infoLeft}>
-            <h4 className={styles.courseTitleText}>{title}</h4>
-            <div className={styles.inlineInfo}>
-              <div className={styles.durationTag}>
+        <div className={styles.courseContent}>
+          <div className={styles.courseInfo}>
+            <div className={styles.infoLeft}>
+              <h4 className={styles.courseTitleText}>{title}</h4>
+              <div className={styles.inlineInfo}>
                 <Image
                   src="/img/Calendar.svg"
                   alt="Календарь"
-                  width={18}
-                  height={18}
+                  width={20}
+                  height={20}
                 />
-                <span className={styles.durationText}>{duration}</span>
-              </div>
-              <div className={styles.timeTag}>
-                <Image src="/img/Icon.svg"
+                <span className={styles.courseParam}>{duration}</span>
+                <Image
+                  src="/img/Icon.svg"
                   alt="Время"
-                  width={18} 
-                  height={18} 
+                  width={20}
+                  height={20}
                 />
                 <span className={styles.courseParam}>{timePerDay}</span>
               </div>
-              <div className={styles.difficultyTag}>
-                <Image
-                  src="/img/mingcute_signal-fill.svg"
-                  alt="Сложность"
-                  width={18}
-                  height={18}
-                />
-                <span className={styles.courseParam}>{difficulty}</span>
-              </div>
             </div>
+          </div>
+
+          <div>
+            <span className={styles.categoryTag}>{category}</span>
+          </div>
+
+          <div className={styles.difficultyTag}>
+            <Image
+              src="/img/mingcute_signal-fill.svg"
+              alt="Сложность"
+              width={20}
+              height={20}
+              style={{ marginRight: '8px' }}
+            />
+            <span className={styles.courseParam}>{difficulty}</span>
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

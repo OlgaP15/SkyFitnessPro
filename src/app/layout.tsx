@@ -26,9 +26,7 @@ export default function RootLayout({
       <body className={roboto.className}>
         <ReduxProvider>
           <Navigation />
-          <main>
-            {children}
-          </main>
+          <main>{children}</main>
         </ReduxProvider>
       </body>
     </html>

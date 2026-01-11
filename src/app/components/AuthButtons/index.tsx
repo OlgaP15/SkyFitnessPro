@@ -10,9 +10,9 @@ export default function AuthButtons() {
   if (isAuth) {
     return (
       <div className={styles.userInfo}>
-        <span className={styles.userName}>Привет, {user?.username}!</span>
+        <span className={styles.userName}></span>
         <Link href="/profile" className={styles.profileButton}>
-          Профиль
+        {user?.username}
         </Link>
       </div>
     );
