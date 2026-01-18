@@ -3,16 +3,17 @@
 import Link from 'next/link';
 import styles from './AuthButtons.module.css';
 import { useAppSelector } from '../../../store/store';
+import { useModal } from '@/context/modalContex';
 
 export default function AuthButtons() {
   const { isAuth, user } = useAppSelector((state) => state.auth);
+  const { openLogin } = useModal();
 
   if (isAuth) {
     return (
       <div className={styles.userInfo}>
-        <span className={styles.userName}></span>
         <Link href="/profile" className={styles.profileButton}>
-        {user?.username}
+          {user?.username || 'Профиль'}
         </Link>
       </div>
     );
@@ -20,9 +21,12 @@ export default function AuthButtons() {
 
   return (
     <div className={styles.authButtons}>
-      <Link href="/auth/signin" className={styles.loginButton}>
+      <button 
+        onClick={() => openLogin(true)} // Передаем true для формы входа
+        className={styles.loginButton}
+      >
         Вход
-      </Link>
+      </button>
     </div>
   );
 }

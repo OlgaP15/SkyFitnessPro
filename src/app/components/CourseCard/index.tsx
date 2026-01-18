@@ -9,7 +9,6 @@ interface CourseCardProps {
   title: string;
   duration: string;
   timePerDay: string;
-  category: string;
   difficulty: string;
   image: string;
 }
@@ -19,7 +18,6 @@ export default function CourseCard({
   title,
   duration,
   timePerDay,
-  category,
   difficulty,
   image,
 }: CourseCardProps) {
@@ -66,11 +64,6 @@ export default function CourseCard({
               </div>
             </div>
           </div>
-
-          <div>
-            <span className={styles.categoryTag}>{category}</span>
-          </div>
-
           <div className={styles.difficultyTag}>
             <Image
               src="/img/mingcute_signal-fill.svg"

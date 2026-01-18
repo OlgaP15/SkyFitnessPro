@@ -3,7 +3,7 @@
 import styles from './HomePage.module.css';
 import CourseCard from './components/CourseCard';
 import PromoBanner from './components/PromoBanner/PromoBanner'; 
-import { courses } from './data/courses'; // Добавляем импорт
+import { courses } from './data/courses'; 
 
 export default function Home() {
   const scrollToTop = () => {

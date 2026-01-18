@@ -7,25 +7,17 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import { login, clearError } from '@/store/features/authSlice';
-import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 
 export default function Signin() {
   const dispatch = useAppDispatch();
-  const router = useRouter();
-  const { error, loading, isAuth } = useAppSelector((state) => state.auth);
+  const { error, loading } = useAppSelector((state) => state.auth);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   useEffect(() => {
     dispatch(clearError());
   }, [dispatch]);
-
-  useEffect(() => {
-    if (isAuth) {
-      router.push('/');
-    }
-  }, [isAuth, router]);
 
   useEffect(() => {
     if (error) {
@@ -42,12 +34,8 @@ export default function Signin() {
     }
 
     try {
-      const result = await dispatch(login({ email, password }));
-
-      if (login.fulfilled.match(result)) {
-        toast.success('Вход выполнен успешно!');
-        router.push('/');
-      }
+      await dispatch(login({ email, password }));
+      // Модалка закроется автоматически через useEffect в LoginModal
     } catch {}
   };
 
@@ -68,7 +56,7 @@ export default function Signin() {
         <input
           className={classNames(styles.modal__input)}
           type="text"
-          placeholder="Логин"
+          placeholder="Эл. почта"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -91,13 +79,6 @@ export default function Signin() {
           {loading ? 'Загрузка...' : 'Войти'}
         </button>
       </form>
-      <Link
-        href="/auth/signup"
-        className={styles.modal__btnSignup}
-        onClick={(e) => loading && e.preventDefault()}
-      >
-        Зарегистрироваться
-      </Link>
     </>
   );
 }

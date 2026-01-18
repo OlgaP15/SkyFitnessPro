@@ -7,15 +7,13 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import { register, clearError } from '@/store/features/authSlice';
-import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 
 export default function Signup() {
   const dispatch = useAppDispatch();
-  const router = useRouter();
   const { error, loading } = useAppSelector((state) => state.auth);
   const [email, setEmail] = useState('');
-  const [username ] = useState('');
+  const [username] = useState('');
   const [password, setPassword] = useState('');
   const [repeat, setRepeat] = useState('');
 
@@ -52,7 +50,7 @@ export default function Signup() {
       
       if (register.fulfilled.match(result)) {
         toast.success('Регистрация успешна! Теперь вы можете войти.');
-        router.push('/auth/signin');
+        // Модалка закроется автоматически, пользователь перейдет на вход
       }
     } catch {}
   };
@@ -108,13 +106,6 @@ export default function Signup() {
           {loading ? 'Загрузка...' : 'Зарегистрироваться'}
         </button>
       </form>
-      <Link 
-        href="/auth/signin" 
-        className={styles.modal__btnSignup}
-        onClick={(e) => loading && e.preventDefault()}
-      >
-        Войти
-      </Link>
     </>
   );
 }

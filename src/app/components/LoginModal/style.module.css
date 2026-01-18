@@ -1,0 +1,108 @@
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+  }
+  
+  .modalContent {
+    position: relative;
+    background-color: transparent; /* Прозрачный фон, формы сами белые */
+    border-radius: 30px;
+    box-shadow: 0px 4px 67px -12px rgba(0, 0, 0, 0.13);
+  }
+  
+  .closeButton {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #666;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.3s;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .closeButton:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .switchForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  
+  .switchForm p {
+    margin: 0;
+    font-size: 16px;
+    color: #666;
+  }
+  
+  .switchButton {
+    width: 280px;
+    height: 52px;
+    color: #000000;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 16px;
+    transition: background-color 0.3s;
+    border-radius: 46px;
+  }
+  
+  .switchButton:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    background-color: white;
+    border-radius: 30px;
+    width: 360px;
+    height: 425px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Стили для форм внутри модалки - используем оригинальные стили */
+  .modal__form {
+    width: 360px;
+    background-color: #ffffff;
+    border-radius: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    box-sizing: border-box;
+    box-shadow: 0px 4px 67px -12px rgba(0, 0, 0, 0.13);
+  }
+  
+  /* Форма входа */
+  .signin {
+    height: 425px;
+  }
+  
+  /* Форма регистрации */
+  .signup {
+    height: 487px;
+  }

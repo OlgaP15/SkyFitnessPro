@@ -1,9 +1,12 @@
 import { Roboto } from 'next/font/google';
 import type { Metadata } from 'next';
-import ReduxProvider from '../store/ReduxProvider'; // Исправленный путь
+import ReduxProvider from '../store/ReduxProvider';
 import './globals.css';
 import 'react-toastify/dist/ReactToastify.css';
 import Navigation from './components/Navigation/Navigation';
+import { ModalProvider } from '@/context/modalContex';
+import LoginModal from './components/LoginModal/LoginModal';
+import { ToastContainer } from 'react-toastify';
 
 const roboto = Roboto({
   variable: '--font-roboto',
@@ -23,11 +26,26 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru">
-      <body className={roboto.className}>
-        <ReduxProvider>
-          <Navigation />
-          <main>{children}</main>
-        </ReduxProvider>
+      <body className={roboto.className} suppressHydrationWarning>
+        <ModalProvider>
+          <ReduxProvider>
+            <Navigation />
+            <main>{children}</main>
+            <LoginModal />
+            <ToastContainer
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="light"
+            />
+          </ReduxProvider>
+        </ModalProvider>
       </body>
     </html>
   );
