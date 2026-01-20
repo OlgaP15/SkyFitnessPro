@@ -13,7 +13,6 @@ export default function Signup() {
   const dispatch = useAppDispatch();
   const { error, loading } = useAppSelector((state) => state.auth);
   const [email, setEmail] = useState('');
-  const [username] = useState('');
   const [password, setPassword] = useState('');
   const [repeat, setRepeat] = useState('');
 
@@ -30,27 +29,44 @@ export default function Signup() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!email.trim() || !username.trim() || !password.trim() || !repeat.trim()) {
-      toast.error("Заполните все поля");
+    if (!email.trim() || !password.trim() || !repeat.trim()) {
+      toast.error('Заполните все поля');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error('Введите корректный email адрес');
       return;
     }
 
     if (password !== repeat) {
-      toast.error("Пароли не совпадают");
+      toast.error('Пароли не совпадают');
       return;
     }
 
     if (password.length < 6) {
-      toast.error("Пароль должен содержать минимум 6 символов");
+      toast.error('Пароль должен содержать не менее 6 символов');
+      return;
+    }
+
+    const specialCharCount = (password.match(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/g) || []).length;
+    if (specialCharCount < 2) {
+      toast.error('Пароль должен содержать не менее 2 спецсимволов');
+      return;
+    }
+
+    const hasUpperCase = /[A-ZА-Я]/.test(password);
+    if (!hasUpperCase) {
+      toast.error('Пароль должен содержать как минимум одну заглавную букву');
       return;
     }
 
     try {
-      const result = await dispatch(register({ email, username, password }));
+      const result = await dispatch(register({ email, password }));
       
       if (register.fulfilled.match(result)) {
         toast.success('Регистрация успешна! Теперь вы можете войти.');
-        // Модалка закроется автоматически, пользователь перейдет на вход
       }
     } catch {}
   };
@@ -64,6 +80,7 @@ export default function Signup() {
             alt="SkyFitnessPro"
             width={220}
             height={35}
+            style={{ width: 'auto', height: 'auto' }}
             priority
           />
         </div>
@@ -71,10 +88,11 @@ export default function Signup() {
       <form onSubmit={handleRegister} className={styles.modal__form}>
         <input
           className={classNames(styles.modal__input, styles.login)}
-          type="text"
+          type="email"
           placeholder="Эл. почта"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
           required
           disabled={loading}
         />
@@ -84,6 +102,7 @@ export default function Signup() {
           placeholder="Пароль"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          autoComplete="new-password"
           required
           disabled={loading}
           minLength={6}
@@ -94,6 +113,7 @@ export default function Signup() {
           placeholder="Повторите пароль"
           value={repeat}
           onChange={(e) => setRepeat(e.target.value)}
+          autoComplete="new-password"
           required
           disabled={loading}
           minLength={6}

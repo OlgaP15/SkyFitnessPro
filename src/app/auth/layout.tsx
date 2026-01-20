@@ -27,10 +27,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
     }
   }, [isAuth, router]);
 
-  // Определяем тип формы (вход или регистрация)
   const isSignin = pathname === '/auth/signin';
-  
-  // Рассчитываем позицию модального окна в зависимости от его высоты
   const modalHeight = isSignin ? 425 : 487;
   const modalWidth = 360;
 

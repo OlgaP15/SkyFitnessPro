@@ -3,31 +3,46 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import styles from './CourseCard.module.css';
+import { Course } from '@/types/shared.Types';
 
 interface CourseCardProps {
-  id: number;
-  title: string;
-  duration: string;
-  timePerDay: string;
-  difficulty: string;
-  image: string;
+  course: Course;
 }
 
-export default function CourseCard({
-  id,
-  title,
-  duration,
-  timePerDay,
-  difficulty,
-  image,
-}: CourseCardProps) {
+export default function CourseCard({ course }: CourseCardProps) {
+  const duration = course.durationInDays
+    ? `${course.durationInDays} дней`
+    : '';
+  const timePerDay = course.dailyDurationInMinutes
+    ? `${course.dailyDurationInMinutes.from}-${course.dailyDurationInMinutes.to} мин/день`
+    : '';
+  const difficulty = course.difficulty || '';
+
+  const getCourseImage = (nameRU: string, nameEN: string) => {
+    const images: Record<string, string> = {
+      йога: '/images/yoga.jpg',
+      yoga: '/images/yoga.jpg',
+      стретчинг: '/images/stretching.jpg',
+      stretching: '/images/stretching.jpg',
+      фитнес: '/images/fitness.jpg',
+      fitness: '/images/fitness.jpg',
+      'степ-аэробика': '/images/step-aerobics.jpg',
+      'step-aerobics': '/images/step-aerobics.jpg',
+      бодифлекс: '/images/bodyflex.jpg',
+      bodyflex: '/images/bodyflex.jpg',
+    };
+    return images[nameRU.toLowerCase()] || images[nameEN.toLowerCase()] || '/images/yoga.jpg';
+  };
+
+  const imageSrc = getCourseImage(course.nameRU, course.nameEN);
+
   return (
-    <Link href={`/courses/${id}`} className={styles.courseCardLink}>
+    <Link href={`/courses/${course._id}`} className={styles.courseCardLink}>
       <div className={styles.courseCard}>
         <div className={styles.courseImage}>
           <Image
-            src={image}
-            alt={title}
+            src={imageSrc}
+            alt={course.nameRU}
             width={360}
             height={325}
             className={styles.image}
@@ -45,7 +60,7 @@ export default function CourseCard({
         <div className={styles.courseContent}>
           <div className={styles.courseInfo}>
             <div className={styles.infoLeft}>
-              <h4 className={styles.courseTitleText}>{title}</h4>
+              <h4 className={styles.courseTitleText}>{course.nameRU}</h4>
               <div className={styles.inlineInfo}>
                 <Image
                   src="/img/Calendar.svg"
@@ -64,6 +79,7 @@ export default function CourseCard({
               </div>
             </div>
           </div>
+          {difficulty && (
           <div className={styles.difficultyTag}>
             <Image
               src="/img/mingcute_signal-fill.svg"
@@ -74,6 +90,7 @@ export default function CourseCard({
             />
             <span className={styles.courseParam}>{difficulty}</span>
           </div>
+          )}
         </div>
       </div>
     </Link>

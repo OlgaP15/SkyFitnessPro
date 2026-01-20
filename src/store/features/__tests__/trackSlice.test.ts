@@ -3,8 +3,8 @@ import {
   setTracks,
   setLoading,
   setError,
-} from '../trackSlice';
-import { TrackTypes } from '../trackSlice';
+} from '../courseSlice';
+import { TrackTypes } from '../courseSlice';
 
 describe('trackSlice', () => {
   const mockTrack: TrackTypes = {

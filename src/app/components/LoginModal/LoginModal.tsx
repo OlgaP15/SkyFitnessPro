@@ -7,7 +7,6 @@ import { useAppSelector } from '@/store/store'
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
 
-// Динамическая загрузка форм
 const SigninForm = dynamic(() => import('@/app/auth/signin/page'), {
   loading: () => <div className={style.loading}>Загрузка...</div>,
   ssr: false
@@ -22,7 +21,6 @@ export default function LoginModal() {
   const { isLoginOpen, closeLogin, isSignin, switchForm } = useModal()
   const { isAuth } = useAppSelector((state) => state.auth)
   
-  // Закрываем модалку при успешной авторизации
   useEffect(() => {
     if (isAuth && isLoginOpen) {
       closeLogin()

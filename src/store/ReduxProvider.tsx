@@ -12,7 +12,6 @@ export default function ReduxProvider({
   const store = useMemo(() => makeStore(), []);
 
   if (typeof window === 'undefined') {
-    // На сервере создаем новый store
     return <Provider store={makeStore()}>{children}</Provider>;
   }
 

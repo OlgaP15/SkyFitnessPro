@@ -117,7 +117,6 @@ const authSlice = createSlice({
           state.refresh = parsed.tokens.refresh;
           state.isAuth = true;
         } catch (error) {
-          console.error('Error restoring session:', error);
           localStorage.removeItem("user");
           localStorage.removeItem("access_token");
           localStorage.removeItem("refresh_token");

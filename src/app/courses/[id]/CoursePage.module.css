@@ -1,198 +1,367 @@
 .coursePage {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-  }
-  
-  .heroSection {
-    margin-bottom: 40px;
-  }
-  
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px 60px;
+}
+
+.heroBanner {
+  width: 100%;
+  max-width: 1160px;
+  margin-bottom: 60px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 30px;
+}
+
+.heroImage {
+  width: 100%;
+  max-width: 1160px;
+  height: 310px;
+  border-radius: 30px;
+  object-fit: cover;
+  display: block;
+}
+
+.courseTitle {
+  position: absolute;
+  top: 50%;
+  left: 40px;
+  transform: translateY(-50%);
+  width: 300px;
+  height: 66px;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  font-style: normal;
+  font-size: 60px;
+  line-height: 110%;
+  letter-spacing: 0px;
+  font-variant-numeric: lining-nums;
+  background: #ffffff;
+  color: #1f2937;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  opacity: 1;
+}
+
+.suitableSection {
+  margin-bottom: 60px;
+}
+
+.sectionTitle {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 30px;
+}
+
+.suitableCards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.suitableCard {
+  background: #1f2937;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.cardNumber {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  font-style: normal;
+  font-size: 75px;
+  line-height: 135%;
+  letter-spacing: 0px;
+  font-variant-numeric: lining-nums;
+  color: #BCEC30;
+  opacity: 1;
+  flex-shrink: 0;
+}
+
+.cardText {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 110%;
+  letter-spacing: 0px;
+  font-variant-numeric: lining-nums;
+  color: #ffffff;
+  opacity: 1;
+  margin: 0;
+  flex: 1;
+}
+
+.directionsSection {
+  margin-bottom: 60px;
+}
+
+.directionsCard {
+  width: 1160px;
+  height: 146px;
+  border-radius: 28px;
+  padding: 30px;
+  background: #BCEC30;
+  opacity: 1;
+  box-sizing: border-box;
+}
+
+.directionsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  height: 100%;
+}
+
+.directionItem {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 284px;
+  height: 26px;
+  gap: 8px;
+  opacity: 1;
+  margin: 0;
+}
+
+.sparcleIcon {
+  width: 26px;
+  height: 26px;
+  opacity: 1;
+  flex-shrink: 0;
+}
+
+.directionText {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 110%;
+  letter-spacing: 0px;
+  font-variant-numeric: lining-nums;
+  color: #1f2937;
+}
+
+
+
+.startCard {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 40px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.startContent {
+  width: 437px;
+  height: 406px;
+  gap: 28px;
+  opacity: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.startTitle {
+  width: 398px;
+  height: 120px;
+  opacity: 1;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  font-style: normal;
+  font-size: 60px;
+  line-height: 100%;
+  letter-spacing: 0px;
+  vertical-align: middle;
+  font-variant-numeric: lining-nums;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.benefitsList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 32px 0;
+}
+
+.benefitItem {
+  font-size: 18px;
+  color: #1f2937;
+  margin-bottom: 12px;
+  padding-left: 24px;
+  position: relative;
+}
+
+.benefitItem::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #1f2937;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.benefitItem:last-child {
+  margin-bottom: 0;
+}
+
+.startButton {
+  width: 437px;
+  height: 52px;
+  border-radius: 46px;
+  padding-top: 16px;
+  padding-right: 26px;
+  padding-bottom: 16px;
+  padding-left: 26px;
+  gap: 10px;
+  opacity: 1;
+  background: #BCEC30;
+  color: #1f2937;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 18px;
+  line-height: 110%;
+  letter-spacing: 0px;
+  font-variant-numeric: lining-nums;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.startButton:hover {
+  background: #a8d026;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(188, 236, 48, 0.4);
+}
+
+.startImageWrapper {
+  flex-shrink: 0;
+  position: relative;
+}
+
+.imageContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.startImage {
+  position: absolute;
+  left: -477px;
+  top: -310px;
+  width: 486px;
+  height: 543px;
+  transform: rotate(2.99deg);
+  opacity: 1;
+  object-fit: contain;
+  box-sizing: border-box;
+  z-index: 2;
+}
+
+.decorBig {
+  position: absolute;
+  bottom: -262px;
+  right: -28px;
+  z-index: 0;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;
+  transform: rotate(4.35deg);
+}
+
+.decorSmall {
+  position: absolute;
+  bottom: 140px;
+  right: 315px;
+  z-index: 1;
+  width: auto;
+  height: auto;
+  max-width: 200px;
+  max-height: 200px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.notFound {
+  text-align: center;
+  padding: 100px 20px;
+  font-size: 24px;
+  color: #6b7280;
+}
+
+@media (max-width: 1024px) {
   .heroImage {
-    position: relative;
     width: 100%;
-    border-radius: 20px;
-    overflow: hidden;
+    max-width: 1160px;
+    height: auto;
+    aspect-ratio: 1160 / 310;
   }
-  
-  .image {
+
+  .suitableCards {
+    grid-template-columns: 1fr;
+  }
+
+  .startCard {
+    flex-direction: column;
+  }
+
+  .startImageWrapper {
     width: 100%;
-    object-fit: cover;
+    text-align: center;
   }
-  
-  .courseTitle {
-    font-size: 48px;
-    font-weight: 700;
-    margin-bottom: 16px;
+}
+
+@media (max-width: 768px) {
+  .heroImage {
+    width: 100%;
+    max-width: 1160px;
+    height: auto;
+    aspect-ratio: 1160 / 310;
   }
-  
-  .courseDescription {
-    font-size: 20px;
-    opacity: 0.9;
-    max-width: 800px;
+
+  .sectionTitle {
+    font-size: 24px;
   }
-  
-  .contentContainer {
-    display: flex;
-    gap: 40px;
-    margin-bottom: 60px;
+
+  .suitableCard {
+    flex-direction: column;
+    text-align: center;
   }
-  
-  .mainContent {
-    flex: 2;
+
+  .cardNumber {
+    align-self: center;
   }
-  
-  .section {
-    margin-bottom: 40px;
+
+  .startTitle {
+    font-size: 24px;
   }
-  
-  .section h2 {
-    font-size: 32px;
-    margin-bottom: 20px;
-    color: #1f2937;
-  }
-  
-  .section p {
-    font-size: 18px;
-    line-height: 1.6;
-    color: #4b5563;
-  }
-  
-  .benefitsList {
-    list-style: none;
-    padding: 0;
-  }
-  
+
   .benefitItem {
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
-    font-size: 18px;
+    font-size: 16px;
   }
-  
-  .checkmark {
-    color: #BCEC30;
-    font-weight: bold;
-    margin-right: 12px;
-    font-size: 20px;
+
+  .courseTitle {
+    font-size: 40px;
+    width: auto;
+    max-width: 300px;
   }
-  
-  .programDetails {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 24px;
-  }
-  
-  .programItem {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 20px;
-    background: #f9fafb;
-    border-radius: 12px;
-  }
-  
-  .programItem h4 {
-    margin: 0 0 4px 0;
-    font-size: 18px;
-    color: #1f2937;
-  }
-  
-  .programItem p {
-    margin: 0;
-    color: #6b7280;
-  }
-  
-  .sidebar {
-    flex: 1;
-  }
-  
-  .instructorCard {
-    background: white;
-    padding: 24px;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    margin-bottom: 24px;
-  }
-  
-  .instructorCard h3 {
-    font-size: 24px;
-    margin-bottom: 16px;
-    color: #1f2937;
-  }
-  
-  .instructorInfo h4 {
-    font-size: 20px;
-    margin-bottom: 8px;
-    color: #2563eb;
-  }
-  
-  .startCourseButton {
-    width: 100%;
-    background: linear-gradient(to right, #3b82f6, #7c3aed);
-    color: white;
-    padding: 18px;
-    border-radius: 12px;
-    font-size: 18px;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s;
-    margin-bottom: 24px;
-  }
-  
-  .startCourseButton:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
-  }
-  
-  .courseStats {
-    display: flex;
-    justify-content: space-between;
-    background: white;
-    padding: 24px;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  }
-  
-  .stat {
-    text-align: center;
-  }
-  
-  .statNumber {
-    display: block;
-    font-size: 28px;
-    font-weight: 700;
-    color: #1f2937;
-  }
-  
-  .statLabel {
-    font-size: 14px;
-    color: #6b7280;
-  }
-  
-  .notFound {
-    text-align: center;
-    padding: 100px 20px;
-    font-size: 24px;
-    color: #6b7280;
-  }
-  
-  /* Адаптивность */
-  @media (max-width: 768px) {
-    .contentContainer {
-      flex-direction: column;
-    }
-    
-    .heroImage {
-      height: 300px;
-    }
-    
-    .courseTitle {
-      font-size: 32px;
-    }
-    
-    .courseDescription {
-      font-size: 16px;
-    }
-  }
+}

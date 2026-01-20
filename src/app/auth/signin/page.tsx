@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/store';
-import { login, clearError } from '@/store/features/authSlice';
+import { loginAction, clearError } from '@/store/features/authSlice';
 import { toast } from 'react-toastify';
 
 export default function Signin() {
@@ -33,10 +33,21 @@ export default function Signin() {
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error('Введите корректный email адрес');
+      return;
+    }
+
     try {
-      await dispatch(login({ email, password }));
-      // Модалка закроется автоматически через useEffect в LoginModal
-    } catch {}
+      const result = await dispatch(loginAction({ email, password }));
+      
+      if (loginAction.fulfilled.match(result)) {
+        toast.success('Вход выполнен успешно!');
+      }
+    } catch (err) {
+      // Ошибки обрабатываются через useEffect с error
+    }
   };
 
   return (
@@ -48,6 +59,7 @@ export default function Signin() {
             alt="SkyFitnessPro"
             width={220}
             height={35}
+            style={{ width: 'auto', height: 'auto' }}
             priority
           />
         </div>
@@ -55,10 +67,11 @@ export default function Signin() {
       <form onSubmit={handleLogin} className={styles.modal__form}>
         <input
           className={classNames(styles.modal__input)}
-          type="text"
+          type="email"
           placeholder="Эл. почта"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
           required
           disabled={loading}
         />
@@ -68,6 +81,7 @@ export default function Signin() {
           placeholder="Пароль"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password"
           required
           disabled={loading}
         />
