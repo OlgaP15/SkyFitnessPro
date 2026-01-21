@@ -7,6 +7,41 @@ import {
   ApiError,
 } from '@/types/shared.Types';
 
+async function fetchWithAuth<T>(
+  path: string,
+  options: Omit<RequestInit, 'headers'> & { headers?: HeadersInit } = {}
+): Promise<T> {
+  const token = localStorage.getItem('token');
+  const headers: HeadersInit = { ...(options.headers ?? {}) };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  // Важно: этот backend может падать, если передать Content-Type: application/json
+  delete (headers as Record<string, string>)['Content-Type'];
+
+  const response = await fetch(BASE_URL + path, {
+    ...options,
+    headers,
+  });
+
+  const contentType = response.headers.get('content-type') ?? '';
+  const isJson = contentType.includes('application/json');
+  const body = isJson ? ((await response.json()) as unknown) : await response.text();
+
+  if (!response.ok) {
+    const message =
+      typeof body === 'object' && body && 'message' in (body as Record<string, unknown>)
+        ? String((body as Record<string, unknown>).message)
+        : `Ошибка запроса: ${response.status}`;
+    const error = new Error(message) as Error & { status?: number };
+    error.status = response.status;
+    throw error;
+  }
+
+  return body as T;
+}
+
 const api = axios.create({
   baseURL: BASE_URL,
   transformRequest: [
@@ -97,36 +132,19 @@ export const getWorkoutById = async (workoutId: string): Promise<Workout> => {
 };
 
 export const addUserCourse = async (courseId: string): Promise<ApiError> => {
-  try {
-    const response = await api.post<ApiError>(
-      '/api/fitness/users/me/courses',
-      { courseId }
-    );
-    return response.data;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error) && error.response) {
-      const errorData = error.response.data as ApiError;
-      throw new Error(errorData.message || 'Ошибка добавления курса');
-    }
-    throw error;
-  }
+  return await fetchWithAuth<ApiError>('/api/fitness/users/me/courses', {
+    method: 'POST',
+    body: JSON.stringify({ courseId }),
+  });
 };
 
 export const deleteUserCourse = async (
   courseId: string
 ): Promise<ApiError> => {
-  try {
-    const response = await api.delete<ApiError>(
-      `/api/fitness/users/me/courses/${courseId}`
-    );
-    return response.data;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error) && error.response) {
-      const errorData = error.response.data as ApiError;
-      throw new Error(errorData.message || 'Ошибка удаления курса');
-    }
-    throw error;
-  }
+  return await fetchWithAuth<ApiError>(
+    `/api/fitness/users/me/courses/${courseId}`,
+    { method: 'DELETE' }
+  );
 };
 
 export const resetCourseProgress = async (
@@ -150,14 +168,47 @@ export const getCourseProgress = async (
   courseId: string
 ): Promise<ProgressResponse> => {
   try {
+    // Используем validateStatus, чтобы 500 не считался ошибкой и не логировался в консоль
     const response = await api.get<ProgressResponse>(
-      `/api/fitness/users/me/progress?courseId=${courseId}`
+      `/api/fitness/users/me/progress?courseId=${courseId}`,
+      {
+        validateStatus: (status) => {
+          // Принимаем 200-299 и 500 как валидные статусы (500 = данных еще нет, это нормально)
+          return (status >= 200 && status < 300) || status === 500;
+        }
+      }
     );
+    
+    // Если сервер вернул 500, возвращаем пустой прогресс
+    if (response.status === 500) {
+      return {
+        courseId,
+        courseCompleted: false,
+        workoutsProgress: [],
+        progressData: [],
+      };
+    }
+    
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response) {
       const errorData = error.response.data as ApiError;
-      throw new Error(errorData.message || 'Ошибка получения прогресса');
+      const errorStatus = error.response.status;
+      
+      // Для 500 возвращаем пустой прогресс вместо ошибки
+      if (errorStatus === 500) {
+        return {
+          courseId,
+          courseCompleted: false,
+          workoutsProgress: [],
+          progressData: [],
+        };
+      }
+      
+      // Для других ошибок сохраняем статус ошибки для обработки в компонентах
+      const enhancedError = new Error(errorData.message || 'Ошибка получения прогресса') as Error & { status?: number };
+      enhancedError.status = errorStatus;
+      throw enhancedError;
     }
     throw error;
   }

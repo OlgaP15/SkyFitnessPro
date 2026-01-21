@@ -1,20 +1,132 @@
 'use client';
 
-import Link from 'next/link';
+import { useEffect, useMemo, useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import styles from './AuthButtons.module.css';
-import { useAppSelector } from '../../../store/store';
+import { useAppDispatch, useAppSelector } from '../../../store/store';
 import { useModal } from '@/context/modalContex';
+import { getMe } from '@/app/services/auth/authApi';
+import { setUser, logout } from '@/store/features/authSlice';
 
 export default function AuthButtons() {
+  const dispatch = useAppDispatch();
+  const router = useRouter();
   const { isAuth, user } = useAppSelector((state) => state.auth);
   const { openLogin } = useModal();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  const userEmail = useMemo(() => user?.email || null, [user?.email]);
+
+  useEffect(() => {
+    if (isAuth && !userEmail) {
+      getMe()
+        .then((userData) => {
+          if (userData && userData.email) {
+            dispatch(setUser(userData));
+          }
+        })
+        .catch(() => {
+          // Игнорируем ошибки
+        });
+    }
+  }, [isAuth, userEmail, dispatch]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        modalRef.current &&
+        buttonRef.current &&
+        !modalRef.current.contains(event.target as Node) &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setIsModalOpen(false);
+      }
+    };
+
+    if (isModalOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isModalOpen]);
+
+  const getUserName = (): string => {
+    if (!isAuth || !user) {
+      return 'Профиль';
+    }
+    
+    const email = user.email;
+    if (email && typeof email === 'string' && email.trim() !== '') {
+      const namePart = email.split('@')[0];
+      if (namePart && namePart.trim() !== '') {
+        return namePart.charAt(0).toUpperCase() + namePart.slice(1);
+      }
+    }
+    
+    return 'Профиль';
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    setIsModalOpen(false);
+    router.push('/');
+  };
+
+  const handleProfileClick = () => {
+    setIsModalOpen(false);
+    router.push('/profile');
+  };
 
   if (isAuth) {
+    const displayName = getUserName();
     return (
       <div className={styles.userInfo}>
-        <Link href="/profile" className={styles.profileButton}>
-          {user?.username || 'Профиль'}
-        </Link>
+        <button
+          ref={buttonRef}
+          onClick={() => setIsModalOpen(!isModalOpen)}
+          className={styles.profileButton}
+        >
+          <Image
+            src="/images/Profile.svg"
+            alt="Profile"
+            width={50}
+            height={50}
+            className={styles.profileIcon}
+          />
+          <span>{displayName}</span>
+          <Image
+            src="/images/galka.svg"
+            alt="Dropdown"
+            width={13}
+            height={8}
+            className={styles.dropdownIcon}
+          />
+        </button>
+        {isModalOpen && (
+          <div ref={modalRef} className={styles.modal}>
+            <div className={styles.modalContent}>
+              <div className={styles.userName}>{displayName}</div>
+              <div className={styles.userEmail}>{user?.email || ''}</div>
+              <button
+                onClick={handleProfileClick}
+                className={styles.profileModalButton}
+              >
+                Мой профиль
+              </button>
+              <button
+                onClick={handleLogout}
+                className={styles.logoutButton}
+              >
+                Выйти
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -22,7 +134,7 @@ export default function AuthButtons() {
   return (
     <div className={styles.authButtons}>
       <button 
-        onClick={() => openLogin(true)} // Передаем true для формы входа
+        onClick={() => openLogin(true)}
         className={styles.loginButton}
       >
         Вход

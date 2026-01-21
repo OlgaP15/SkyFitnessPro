@@ -101,7 +101,36 @@ const authSlice = createSlice({
       state.error = null;
     },
     setUser: (state, action: PayloadAction<User>) => {
-      state.user = action.payload;
+      // При обновлении пользователя сохраняем локальные selectedCourses если они есть
+      const newUser = { ...action.payload };
+      if (state.user && state.user.selectedCourses && state.user.selectedCourses.length > 0) {
+        const localCourses = state.user.selectedCourses;
+        const serverCourses = newUser.selectedCourses || [];
+        // Объединяем, приоритет у локальных (они идут первыми)
+        const allCoursesSet = new Set([...localCourses, ...serverCourses]);
+        newUser.selectedCourses = Array.from(allCoursesSet);
+      }
+      state.user = newUser;
+      localStorage.setItem('user', JSON.stringify(newUser));
+    },
+    addCourseToUser: (state, action: PayloadAction<string>) => {
+      if (state.user) {
+        if (!state.user.selectedCourses) {
+          state.user.selectedCourses = [];
+        }
+        if (!state.user.selectedCourses.includes(action.payload)) {
+          state.user.selectedCourses = [...state.user.selectedCourses, action.payload];
+          localStorage.setItem('user', JSON.stringify(state.user));
+        }
+      }
+    },
+    removeCourseFromUser: (state, action: PayloadAction<string>) => {
+      if (state.user && state.user.selectedCourses) {
+        state.user.selectedCourses = state.user.selectedCourses.filter(
+          (id) => id !== action.payload
+        );
+        localStorage.setItem('user', JSON.stringify(state.user));
+      }
     },
   },
   extraReducers: (builder) => {
@@ -147,6 +176,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, restoreSession, clearError, setUser } =
+export const { logout, restoreSession, clearError, setUser, addCourseToUser, removeCourseFromUser } =
   authSlice.actions;
 export const authSliceReducer = authSlice.reducer;

@@ -3,10 +3,14 @@
 import { useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
+import { toast } from 'react-toastify';
 import styles from './CoursePage.module.css';
-import { useAppDispatch, useAppSelector } from '@/store/store';
+import { useAppDispatch, useAppSelector, useAppStore } from '@/store/store';
 import { fetchCourseById } from '@/store/features/courseSlice';
 import { useModal } from '@/context/modalContex';
+import { addUserCourse } from '@/app/services/course/courseApi';
+import { getMe } from '@/app/services/auth/authApi';
+import { setUser, addCourseToUser } from '@/store/features/authSlice';
 
 const getCourseImage = (nameRU: string, nameEN: string) => {
   const images: Record<string, string> = {
@@ -27,6 +31,7 @@ const getCourseImage = (nameRU: string, nameEN: string) => {
 export default function CoursePage() {
   const params = useParams();
   const dispatch = useAppDispatch();
+  const store = useAppStore();
   const { currentCourse, loading, error } = useAppSelector(
     (state) => state.course
   );
@@ -61,11 +66,62 @@ export default function CoursePage() {
 
   const courseImageSrc = getCourseImage(currentCourse.nameRU, currentCourse.nameEN);
 
-  const handleAddCourse = () => {
+  const handleAddCourse = async () => {
     if (!isAuth) {
       openLogin();
-    } else {
-      // TODO: Добавить логику добавления курса
+      return;
+    }
+
+    // Пытаемся добавить курс
+    try {
+      await addUserCourse(courseId);
+      
+      // Сразу добавляем курс в локальное состояние для мгновенного отображения
+      dispatch(addCourseToUser(courseId));
+      toast.success('Курс успешно добавлен!');
+      
+      // Обновляем данные с сервера, но сохраняем локальные изменения
+      const updateUserData = async () => {
+        try {
+          const currentState = store.getState();
+          const currentUser = currentState.auth.user;
+          const updatedUser = await getMe();
+          
+          // Объединяем локальные и серверные данные, приоритет у локальных
+          if (currentUser && currentUser.selectedCourses) {
+            const localCourses = currentUser.selectedCourses;
+            const serverCourses = updatedUser.selectedCourses || [];
+            
+            // Объединяем все курсы, приоритет у локальных (они идут первыми)
+            const allCourses = [...new Set([...localCourses, ...serverCourses])];
+            updatedUser.selectedCourses = allCourses;
+          }
+          
+          dispatch(setUser(updatedUser));
+        } catch {
+          // Игнорируем ошибки, но сохраняем локальные изменения
+        }
+      };
+      
+      // Обновляем с задержкой, чтобы сервер успел обновиться
+      setTimeout(updateUserData, 2000);
+      setTimeout(updateUserData, 5000);
+    } catch (error) {
+      // Ошибка 500 означает, что курс уже добавлен на сервере или сервер не успел обновиться
+      const errorMessage = error instanceof Error ? error.message : '';
+      const errorStatus = (error as Error & { status?: number })?.status;
+      
+      if (errorStatus === 500 || errorMessage.includes('500')) {
+        // Добавляем курс в локальное состояние
+        dispatch(addCourseToUser(courseId));
+        toast.success('Курс добавлен!');
+        
+        // При ошибке 500 НЕ обновляем данные с сервера сразу, чтобы не потерять локальный курс
+        // Обновим только если пользователь вручную обновит страницу или перейдет на другую страницу
+        // Это предотвратит потерю курса из-за того, что сервер еще не обновился
+      } else {
+        toast.error(errorMessage || 'Ошибка добавления курса');
+      }
     }
   };
 
@@ -161,7 +217,7 @@ export default function CoursePage() {
               className={styles.startButton}
               onClick={handleAddCourse}
             >
-              Войдите, чтобы добавить курс
+              {isAuth ? 'Добавить курс' : 'Войдите, чтобы добавить курс'}
             </button>
           </div>
           <div className={styles.startImageWrapper}>

@@ -34,16 +34,108 @@
   background-color: #1d4ed8;
 }
 
-.userName {
-  color: #4b5563;
-}
-
 .profileButton {
-  color: #2563eb;
-  text-decoration: none;
-  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #000000;
+  font-size: 16px;
+  font-weight: 400;
 }
 
 .profileButton:hover {
-  color: #1d4ed8;
+  opacity: 0.8;
+}
+
+.profileIcon {
+  width: 50px;
+  height: 50px;
+}
+
+.dropdownIcon {
+  width: 13px;
+  height: 8px;
+}
+
+.modal {
+  position: absolute;
+  top: 120px;
+  left: 1203px;
+  width: 266px;
+  height: 258px;
+  border-radius: 30px;
+  padding: 30px;
+  background: #ffffff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.userName {
+  font-size: 18px;
+  font-weight: 500;
+  color: #000000;
+}
+
+.userEmail {
+  font-size: 14px;
+  font-weight: 400;
+  color: #6b7280;
+}
+
+.profileModalButton {
+  width: 206px;
+  height: 52px;
+  border-radius: 46px;
+  padding: 16px 26px;
+  gap: 10px;
+  background: #bcec30;
+  color: #000000;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+  margin-top: 24px;
+}
+
+.profileModalButton:hover {
+  opacity: 0.9;
+}
+
+.logoutButton {
+  width: 206px;
+  height: 52px;
+  border-radius: 46px;
+  padding: 16px 26px;
+  gap: 10px;
+  background: #ffffff;
+  color: #000000;
+  border: 1px solid #000000;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.logoutButton:hover {
+  background-color: #f3f4f6;
 }
