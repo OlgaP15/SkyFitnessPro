@@ -186,7 +186,7 @@ export const getCourseProgress = async (
         courseCompleted: false,
         workoutsProgress: [],
         progressData: [],
-      };
+      } as ProgressResponse;
     }
     
     return response.data;
@@ -202,7 +202,7 @@ export const getCourseProgress = async (
           courseCompleted: false,
           workoutsProgress: [],
           progressData: [],
-        };
+        } as ProgressResponse;
       }
       
       // Для других ошибок сохраняем статус ошибки для обработки в компонентах
