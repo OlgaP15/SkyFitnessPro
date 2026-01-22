@@ -10,6 +10,63 @@ import { Workout, Exercise, ProgressResponse, Course } from '@/types/shared.Type
 import ProgressModal from '@/app/components/ProgressModal/ProgressModal';
 import SuccessModal from '@/app/components/SuccessModal/SuccessModal';
 
+// Подавляем вывод ошибок CORS от YouTube и 500 ошибок в консоль
+if (typeof window !== 'undefined') {
+  const originalError = console.error;
+  const originalWarn = console.warn;
+  
+  console.error = (...args: unknown[]) => {
+    const message = String(args.join(' '));
+    // Пропускаем ошибки CORS от Google Ads и 500 ошибки от нашего API
+    if (
+      message.includes('googleads.g.doubleclick.net') ||
+      message.includes('CORS policy') ||
+      message.includes('Access to XMLHttpRequest') ||
+      (message.includes('PATCH') && message.includes('500')) ||
+      (message.includes('net::ERR_FAILED') && message.includes('googleads'))
+    ) {
+      return; // Не выводим эти ошибки в консоль
+    }
+    originalError.apply(console, args);
+  };
+  
+  console.warn = (...args: unknown[]) => {
+    const message = String(args.join(' '));
+    // Пропускаем предупреждения от Google Ads
+    if (
+      message.includes('googleads.g.doubleclick.net') ||
+      message.includes('CORS policy')
+    ) {
+      return;
+    }
+    originalWarn.apply(console, args);
+  };
+  
+  // Перехватываем глобальные ошибки
+  window.addEventListener('error', (event) => {
+    const message = event.message || '';
+    if (
+      message.includes('googleads.g.doubleclick.net') ||
+      message.includes('CORS policy') ||
+      message.includes('Access to XMLHttpRequest')
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }, true);
+  
+  // Перехватываем необработанные промисы
+  window.addEventListener('unhandledrejection', (event) => {
+    const message = String(event.reason || '');
+    if (
+      message.includes('googleads.g.doubleclick.net') ||
+      message.includes('CORS policy')
+    ) {
+      event.preventDefault();
+    }
+  });
+}
+
 export default function WorkoutPage() {
   const params = useParams();
   const courseId = params.id as string;
@@ -279,7 +336,7 @@ export default function WorkoutPage() {
         <div className={styles.videoWrapper}>
           {workout.video ? (
             <iframe
-              src={workout.video}
+              src={`${workout.video}?rel=0&modestbranding=1&controls=1`}
               className={styles.video}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen

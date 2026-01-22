@@ -93,7 +93,8 @@ export default function CoursePage() {
             const serverCourses = updatedUser.selectedCourses || [];
             
             // Объединяем все курсы, приоритет у локальных (они идут первыми)
-            const allCourses = [...new Set([...localCourses, ...serverCourses])];
+            const allCoursesSet = new Set([...localCourses, ...serverCourses]);
+            const allCourses = Array.from(allCoursesSet);
             updatedUser.selectedCourses = allCourses;
           }
           
