@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import styles from './CourseCard.module.css';
 import { Course, ProgressResponse } from '@/types/shared.Types';
-import { getCourseProgress, deleteUserCourse, addUserCourse, resetCourseProgress } from '@/app/services/course/courseApi';
+import { getCourseProgress, deleteUserCourse, addUserCourse, resetCourseProgress, getCourseWorkouts } from '@/app/services/course/courseApi';
 import { getMe } from '@/app/services/auth/authApi';
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import { setUser, removeCourseFromUser, addCourseToUser } from '@/store/features/authSlice';
@@ -58,27 +58,91 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
     if (isProfileCard) {
       const fetchProgress = async () => {
         try {
+          // Получаем общее количество тренировок в курсе
+          const allWorkouts = await getCourseWorkouts(course._id);
+          const totalWorkoutsInCourse = allWorkouts.length;
+          
+          // Сначала проверяем localStorage для резервной копии
+          const courseProgressKey = `course_progress_${course._id}`;
+          const savedCourseProgress = localStorage.getItem(courseProgressKey);
+          
           const progressData: ProgressResponse = await getCourseProgress(course._id);
+          
+          // Используем данные из API, если они есть
           if (progressData.workoutsProgress && progressData.workoutsProgress.length > 0) {
             const completedWorkouts = progressData.workoutsProgress.filter(
               (wp) => wp.workoutCompleted
             ).length;
-            const totalWorkouts = progressData.workoutsProgress.length;
-            const progressPercent = Math.round((completedWorkouts / totalWorkouts) * 100);
+            // Используем общее количество тренировок в курсе, а не только те, по которым есть прогресс
+            const progressPercent = totalWorkoutsInCourse > 0 
+              ? Math.round((completedWorkouts / totalWorkoutsInCourse) * 100)
+              : 0;
             setProgress(progressPercent);
+          } else if (savedCourseProgress) {
+            // Если API не вернул данные, используем сохраненные из localStorage
+            try {
+              const parsedProgress = JSON.parse(savedCourseProgress) as ProgressResponse;
+              if (parsedProgress.workoutsProgress && parsedProgress.workoutsProgress.length > 0) {
+                const completedWorkouts = parsedProgress.workoutsProgress.filter(
+                  (wp) => wp.workoutCompleted
+                ).length;
+                // Используем общее количество тренировок в курсе
+                const progressPercent = totalWorkoutsInCourse > 0 
+                  ? Math.round((completedWorkouts / totalWorkoutsInCourse) * 100)
+                  : 0;
+                setProgress(progressPercent);
+              } else {
+                setProgress(0);
+              }
+            } catch {
+              setProgress(0);
+            }
           } else {
             setProgress(0);
           }
         } catch (error) {
           // Игнорируем ошибки 500 - это нормально, если прогресс еще не создан на сервере
           const errorStatus = (error as Error & { status?: number })?.status;
-          if (errorStatus !== 500) {
-            // Логируем только не-500 ошибки, если нужно
-            // console.warn('Ошибка получения прогресса:', error);
+          
+          // Если ошибка 500, проверяем localStorage
+          if (errorStatus === 500) {
+            try {
+              // Пытаемся получить общее количество тренировок
+              const allWorkouts = await getCourseWorkouts(course._id);
+              const totalWorkoutsInCourse = allWorkouts.length;
+              
+              const courseProgressKey = `course_progress_${course._id}`;
+              const savedCourseProgress = localStorage.getItem(courseProgressKey);
+              if (savedCourseProgress) {
+                try {
+                  const parsedProgress = JSON.parse(savedCourseProgress) as ProgressResponse;
+                  if (parsedProgress.workoutsProgress && parsedProgress.workoutsProgress.length > 0) {
+                    const completedWorkouts = parsedProgress.workoutsProgress.filter(
+                      (wp) => wp.workoutCompleted
+                    ).length;
+                    // Используем общее количество тренировок в курсе
+                    const progressPercent = totalWorkoutsInCourse > 0 
+                      ? Math.round((completedWorkouts / totalWorkoutsInCourse) * 100)
+                      : 0;
+                    setProgress(progressPercent);
+                  } else {
+                    setProgress(0);
+                  }
+                } catch {
+                  setProgress(0);
+                }
+              } else {
+                setProgress(0);
+              }
+            } catch {
+              setProgress(0);
+            }
+          } else {
+            setProgress(0);
           }
-          setProgress(0);
         }
       };
+      
       fetchProgress();
       
       // Обновляем прогресс каждые 5 секунд, чтобы видеть изменения после сохранения
@@ -86,7 +150,16 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
         fetchProgress();
       }, 5000);
       
-      return () => clearInterval(interval);
+      // Также слушаем кастомное событие обновления прогресса тренировки
+      const handleProgressUpdate = () => {
+        fetchProgress();
+      };
+      window.addEventListener('workoutProgressUpdated', handleProgressUpdate);
+      
+      return () => {
+        clearInterval(interval);
+        window.removeEventListener('workoutProgressUpdated', handleProgressUpdate);
+      };
     }
   }, [isProfileCard, course._id]);
 
