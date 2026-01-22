@@ -1,18 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'react-toastify';
 import styles from './WorkoutPage.module.css';
-import { getWorkoutById, getWorkoutProgress, saveWorkoutProgress, getCourseById } from '@/app/services/course/courseApi';
+import { getWorkoutById, getWorkoutProgress, saveWorkoutProgress, getCourseById, getCourseProgress } from '@/app/services/course/courseApi';
 import { Workout, Exercise, ProgressResponse, Course } from '@/types/shared.Types';
 import ProgressModal from '@/app/components/ProgressModal/ProgressModal';
 import SuccessModal from '@/app/components/SuccessModal/SuccessModal';
 
 export default function WorkoutPage() {
   const params = useParams();
-  const router = useRouter();
   const courseId = params.id as string;
   const workoutId = params.workoutId as string;
 
@@ -38,10 +37,26 @@ export default function WorkoutPage() {
         // Загружаем прогресс отдельно с повторными попытками
         const fetchProgress = async (attempt = 1) => {
           try {
+            // Сначала проверяем localStorage как резервную копию
+            const storageKey = `progress_${courseId}_${workoutId}`;
+            const savedProgress = localStorage.getItem(storageKey);
+            
             const progressData = await getWorkoutProgress(courseId, workoutId);
             if (progressData && progressData.progressData && progressData.progressData.length > 0) {
               setProgress(progressData);
               setHasProgress(true);
+              // Сохраняем в localStorage как резервную копию
+              localStorage.setItem(storageKey, JSON.stringify(progressData));
+            } else if (savedProgress) {
+              // Если сервер не вернул прогресс, используем сохраненный в localStorage
+              try {
+                const parsedProgress = JSON.parse(savedProgress) as ProgressResponse;
+                setProgress(parsedProgress);
+                setHasProgress(true);
+              } catch {
+                setProgress(null);
+                setHasProgress(false);
+              }
             } else {
               // Если прогресс пустой, устанавливаем пустой прогресс
               setProgress(null);
@@ -54,9 +69,22 @@ export default function WorkoutPage() {
               await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
               fetchProgress(attempt + 1);
             } else {
-              // После всех попыток устанавливаем null
-              setProgress(null);
-              setHasProgress(false);
+              // После всех попыток проверяем localStorage
+              const storageKey = `progress_${courseId}_${workoutId}`;
+              const savedProgress = localStorage.getItem(storageKey);
+              if (savedProgress) {
+                try {
+                  const parsedProgress = JSON.parse(savedProgress) as ProgressResponse;
+                  setProgress(parsedProgress);
+                  setHasProgress(true);
+                } catch {
+                  setProgress(null);
+                  setHasProgress(false);
+                }
+              } else {
+                setProgress(null);
+                setHasProgress(false);
+              }
             }
           }
         };
@@ -93,12 +121,55 @@ export default function WorkoutPage() {
     setProgress(localProgress);
     setHasProgress(true); // Устанавливаем флаг, что прогресс есть
     
+    // Сохраняем прогресс в localStorage как резервную копию
+    const storageKey = `progress_${courseId}_${workoutId}`;
+    localStorage.setItem(storageKey, JSON.stringify(localProgress));
+    
+    // Также сохраняем информацию о завершенности тренировки в общий прогресс курса
+    const courseProgressKey = `course_progress_${courseId}`;
+    try {
+      const courseProgressData = await getCourseProgress(courseId).catch(() => null);
+      if (courseProgressData) {
+        // Обновляем информацию о завершенности тренировки
+        const updatedWorkoutsProgress = courseProgressData.workoutsProgress || [];
+        const workoutIndex = updatedWorkoutsProgress.findIndex((wp: { workoutId: string }) => wp.workoutId === workoutId);
+        if (workoutIndex >= 0) {
+          updatedWorkoutsProgress[workoutIndex].workoutCompleted = isWorkoutCompleted;
+          updatedWorkoutsProgress[workoutIndex].progressData = progressData;
+        } else {
+          updatedWorkoutsProgress.push({
+            workoutId,
+            workoutCompleted: isWorkoutCompleted,
+            progressData: progressData,
+          });
+        }
+        courseProgressData.workoutsProgress = updatedWorkoutsProgress;
+        localStorage.setItem(courseProgressKey, JSON.stringify(courseProgressData));
+      } else {
+        // Если прогресс курса не загружен, создаем новый
+        const newCourseProgress: ProgressResponse = {
+          courseId,
+          courseCompleted: false,
+          workoutsProgress: [{
+            workoutId,
+            workoutCompleted: isWorkoutCompleted,
+            progressData: progressData,
+          }],
+          progressData: [],
+        };
+        localStorage.setItem(courseProgressKey, JSON.stringify(newCourseProgress));
+      }
+    } catch {
+      // Игнорируем ошибки при сохранении прогресса курса
+    }
+    
     try {
       // Сохраняем прогресс
       await saveWorkoutProgress(courseId, workoutId, progressData);
       
       // Пытаемся получить обновленный прогресс с сервера с задержкой и повторными попытками
       // Серверу нужно время, чтобы обработать сохранение
+      const storageKey = `progress_${courseId}_${workoutId}`;
       const fetchUpdatedProgress = async (attempt = 1) => {
         try {
           await new Promise(resolve => setTimeout(resolve, 1500 * attempt)); // Увеличена задержка
@@ -107,10 +178,13 @@ export default function WorkoutPage() {
           if (updatedProgress && updatedProgress.progressData && updatedProgress.progressData.length > 0) {
             setProgress(updatedProgress);
             setHasProgress(true);
+            // Обновляем localStorage с данными с сервера
+            localStorage.setItem(storageKey, JSON.stringify(updatedProgress));
           } else if (updatedProgress) {
             // Если прогресс пустой, но ответ успешный, используем локальные данные
             setProgress(localProgress);
             setHasProgress(true);
+            localStorage.setItem(storageKey, JSON.stringify(localProgress));
           }
         } catch (progressError) {
           // Если не удалось получить прогресс, пробуем еще раз (максимум 5 попыток)
@@ -120,12 +194,18 @@ export default function WorkoutPage() {
             // После всех попыток используем локальный прогресс
             console.warn('Не удалось получить обновленный прогресс после нескольких попыток, используем локальный прогресс:', progressError);
             setProgress(localProgress);
+            setHasProgress(true);
+            // Обновляем localStorage
+            localStorage.setItem(storageKey, JSON.stringify(localProgress));
           }
         }
       };
       
       // Запускаем получение обновленного прогресса в фоне
       fetchUpdatedProgress();
+      
+      // Отправляем кастомное событие для обновления модального окна выбора тренировок
+      window.dispatchEvent(new CustomEvent('workoutProgressUpdated'));
       
       setIsModalOpen(false);
       // Показываем модальное окно успеха вместо toast

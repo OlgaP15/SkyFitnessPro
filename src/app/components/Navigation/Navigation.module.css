@@ -5,9 +5,8 @@
 }
 
 .navContainer {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 23px;
+  max-width: 1160px;
+  margin: 0 140px;
   display: flex; 
   flex-direction: column; 
   gap: 15px; 

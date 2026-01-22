@@ -1,7 +1,11 @@
 .profilePage {
-  max-width: 1200px;
+  max-width: 1440px;
+  width: 100%;
+  max-height: 1559px;
   margin: 0 auto;
-  padding: 60px 20px;
+  padding: 60px 140px;
+  opacity: 1;
+  transform: rotate(0deg);
 }
 
 .profileTitle {

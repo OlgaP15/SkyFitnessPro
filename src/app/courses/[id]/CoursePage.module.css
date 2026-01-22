@@ -1,7 +1,10 @@
 .coursePage {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px 60px;
+  max-width: 1440px;
+  width: 100%;
+  max-height: 1703px;
+  margin: 0 140px;
+  opacity: 1;
+  transform: rotate(0deg);
 }
 
 .heroBanner {
@@ -49,6 +52,7 @@
 }
 
 .suitableSection {
+  max-width: 1160px;
   margin-bottom: 60px;
 }
 
@@ -62,16 +66,16 @@
 .suitableCards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  gap: 17px;
 }
 
 .suitableCard {
   background: #1f2937;
   border-radius: 16px;
-  padding: 24px;
+  padding: 20px;
   display: flex;
-  align-items: flex-start;
-  gap: 20px;
+  align-items: center;
+  gap: 25px;
 }
 
 .cardNumber {
@@ -103,6 +107,7 @@
 
 .directionsSection {
   margin-bottom: 60px;
+  max-width: 1160px;
 }
 
 .directionsCard {
@@ -266,8 +271,8 @@
 
 .startImage {
   position: absolute;
-  left: -477px;
-  top: -310px;
+  right: 271px;
+  top: -314px;
   width: 486px;
   height: 543px;
   transform: rotate(2.99deg);
@@ -279,25 +284,21 @@
 
 .decorBig {
   position: absolute;
-  bottom: -262px;
-  right: -28px;
-  z-index: 0;
+  bottom: -295px;
+  right: 260px;
   width: auto;
   height: auto;
-  object-fit: contain;
-  pointer-events: none;
   transform: rotate(4.35deg);
 }
 
 .decorSmall {
   position: absolute;
-  bottom: 140px;
-  right: 315px;
+  bottom: 150px;
+  right: 590px;
   z-index: 1;
-  width: auto;
-  height: auto;
-  max-width: 200px;
-  max-height: 200px;
+  width: 50px;
+  height: 42.5px;
+  border: 6px;
   object-fit: contain;
   pointer-events: none;
 }

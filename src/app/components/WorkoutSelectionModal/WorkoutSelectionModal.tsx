@@ -52,11 +52,49 @@ export default function WorkoutSelectionModal({
 
         // Создаем карту прогресса для быстрого поиска
         const progressMap = new Map<string, boolean>();
+        
+        // Загружаем данные из API
         if (progressData?.workoutsProgress) {
           progressData.workoutsProgress.forEach((wp) => {
             progressMap.set(wp.workoutId, wp.workoutCompleted);
           });
         }
+        
+        // Также проверяем localStorage для общего прогресса курса (резервная копия)
+        const courseProgressKey = `course_progress_${courseId}`;
+        const savedCourseProgress = localStorage.getItem(courseProgressKey);
+        if (savedCourseProgress) {
+          try {
+            const parsedCourseProgress = JSON.parse(savedCourseProgress) as ProgressResponse;
+            if (parsedCourseProgress.workoutsProgress) {
+              parsedCourseProgress.workoutsProgress.forEach((wp) => {
+                // Используем данные из localStorage, если их нет в API или если они более свежие
+                if (!progressMap.has(wp.workoutId) || wp.workoutCompleted) {
+                  progressMap.set(wp.workoutId, wp.workoutCompleted);
+                }
+              });
+            }
+          } catch {
+            // Игнорируем ошибки парсинга
+          }
+        }
+        
+        // Также проверяем localStorage для каждой тренировки (дополнительная резервная копия)
+        workoutsData.forEach((workout) => {
+          const storageKey = `progress_${courseId}_${workout._id}`;
+          const savedProgress = localStorage.getItem(storageKey);
+          if (savedProgress) {
+            try {
+              const parsedProgress = JSON.parse(savedProgress) as ProgressResponse;
+              // Если тренировка завершена локально, но не в API, используем локальные данные
+              if (parsedProgress.workoutCompleted && !progressMap.get(workout._id)) {
+                progressMap.set(workout._id, true);
+              }
+            } catch {
+              // Игнорируем ошибки парсинга
+            }
+          }
+        });
 
         // Объединяем данные тренировок с прогрессом
         const workoutsWithProgress: WorkoutWithProgress[] = workoutsData.map((workout) => ({
@@ -82,6 +120,19 @@ export default function WorkoutSelectionModal({
 
     if (courseId) {
       fetchWorkouts();
+      
+      // Обновляем данные при изменении localStorage (когда прогресс сохраняется)
+      // Используем кастомное событие вместо storage события, так как storage срабатывает только между вкладками
+      const handleCustomStorageUpdate = () => {
+        fetchWorkouts();
+      };
+      
+      // Слушаем кастомное событие для обновления данных
+      window.addEventListener('workoutProgressUpdated', handleCustomStorageUpdate);
+      
+      return () => {
+        window.removeEventListener('workoutProgressUpdated', handleCustomStorageUpdate);
+      };
     }
   }, [courseId]);
 
@@ -134,33 +185,35 @@ export default function WorkoutSelectionModal({
             const dayText = `${courseName} / ${workoutNumber} день`;
             
             return (
-              <div
-                key={workout._id}
-                className={`${styles.workoutItem} ${
-                  selectedWorkoutId === workout._id ? styles.workoutItemSelected : ''
-                }`}
-                onClick={() => handleWorkoutClick(workout._id)}
-              >
-                <div className={styles.workoutStatus}>
-                  {workout.completed ? (
-                    <div className={styles.statusIconCompleted}>
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <circle cx="10" cy="10" r="9" fill="#4CAF50" stroke="#4CAF50" strokeWidth="2"/>
-                        <path d="M6 10 L9 13 L14 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </div>
-                  ) : (
-                    <div className={styles.statusIcon}>
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <circle cx="10" cy="10" r="9" stroke="#E0E0E0" strokeWidth="2"/>
-                      </svg>
-                    </div>
-                  )}
+              <div key={workout._id}>
+                <div
+                  className={`${styles.workoutItem} ${
+                    selectedWorkoutId === workout._id ? styles.workoutItemSelected : ''
+                  }`}
+                  onClick={() => handleWorkoutClick(workout._id)}
+                >
+                  <div className={styles.workoutStatus}>
+                    {workout.completed ? (
+                      <div className={styles.statusIconCompleted}>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                          <circle cx="10" cy="10" r="9" fill="#BCEC30" stroke="#BCEC30" strokeWidth="2"/>
+                          <path d="M6 10 L9 13 L14 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                    ) : (
+                      <div className={styles.statusIcon}>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                          <circle cx="10" cy="10" r="9" stroke="#E0E0E0" strokeWidth="2"/>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  <div className={styles.workoutInfo}>
+                    <div className={styles.workoutTitle}>{workout.name}</div>
+                    <div className={styles.workoutSubtitle}>{dayText}</div>
+                  </div>
                 </div>
-                <div className={styles.workoutInfo}>
-                  <div className={styles.workoutTitle}>{workout.name}</div>
-                  <div className={styles.workoutSubtitle}>{dayText}</div>
-                </div>
+                {index < workouts.length - 1 && <div className={styles.workoutDivider} />}
               </div>
             );
           })}
