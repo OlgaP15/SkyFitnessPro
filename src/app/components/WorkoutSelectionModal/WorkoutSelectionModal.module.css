@@ -1,0 +1,184 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modalContent {
+  background: white;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0px 4px 67px -12px rgba(0, 0, 0, 0.13);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 20px 24px;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.modalTitle {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 110%;
+  color: #212121;
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 32px;
+  color: #757575;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.closeButton:hover {
+  color: #212121;
+}
+
+.workoutsList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 24px;
+  max-height: calc(80vh - 140px);
+}
+
+.workoutItem {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border: 2px solid transparent;
+}
+
+.workoutItem:hover {
+  background-color: #F5F5F5;
+}
+
+.workoutItemSelected {
+  background-color: #E8F5E9;
+  border-color: #4CAF50;
+}
+
+.workoutStatus {
+  margin-right: 16px;
+  flex-shrink: 0;
+}
+
+.statusIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.statusIconCompleted {
+  width: 20px;
+  height: 20px;
+}
+
+.workoutInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.workoutTitle {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 140%;
+  color: #212121;
+}
+
+.workoutSubtitle {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 140%;
+  color: #757575;
+}
+
+.modalFooter {
+  padding: 20px 24px 24px 24px;
+  border-top: 1px solid #F0F0F0;
+}
+
+.startButton {
+  width: 100%;
+  padding: 16px;
+  background: #81C784;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 140%;
+  color: #212121;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.startButton:hover:not(:disabled) {
+  background: #66BB6A;
+}
+
+.startButton:disabled {
+  background: #E0E0E0;
+  color: #9E9E9E;
+  cursor: not-allowed;
+}
+
+.loading {
+  padding: 40px 24px;
+  text-align: center;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  color: #757575;
+}
+
+/* Стили для скроллбара */
+.workoutsList::-webkit-scrollbar {
+  width: 8px;
+}
+
+.workoutsList::-webkit-scrollbar-track {
+  background: #F5F5F5;
+  border-radius: 4px;
+}
+
+.workoutsList::-webkit-scrollbar-thumb {
+  background: #BDBDBD;
+  border-radius: 4px;
+}
+
+.workoutsList::-webkit-scrollbar-thumb:hover {
+  background: #9E9E9E;
+}

@@ -7,12 +7,13 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import styles from './CourseCard.module.css';
 import { Course, ProgressResponse } from '@/types/shared.Types';
-import { getCourseProgress, deleteUserCourse, getCourseWorkouts, addUserCourse } from '@/app/services/course/courseApi';
+import { getCourseProgress, deleteUserCourse, addUserCourse, resetCourseProgress } from '@/app/services/course/courseApi';
 import { getMe } from '@/app/services/auth/authApi';
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import { setUser, removeCourseFromUser, addCourseToUser } from '@/store/features/authSlice';
 import { useModal } from '@/context/modalContex';
 import { useAppStore } from '@/store/store';
+import WorkoutSelectionModal from '../WorkoutSelectionModal/WorkoutSelectionModal';
 
 interface CourseCardProps {
   course: Course;
@@ -28,6 +29,7 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
   const { openLogin } = useModal();
   const [progress, setProgress] = useState<number>(0);
   const [loading, setLoading] = useState(false);
+  const [isWorkoutModalOpen, setIsWorkoutModalOpen] = useState(false);
   const duration = course.durationInDays
     ? `${course.durationInDays} дней`
     : '';
@@ -78,6 +80,13 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
         }
       };
       fetchProgress();
+      
+      // Обновляем прогресс каждые 5 секунд, чтобы видеть изменения после сохранения
+      const interval = setInterval(() => {
+        fetchProgress();
+      }, 5000);
+      
+      return () => clearInterval(interval);
     }
   }, [isProfileCard, course._id]);
 
@@ -114,19 +123,44 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
     e.preventDefault();
     e.stopPropagation();
     
-    // Получаем первую тренировку курса и переходим на нее
-    try {
-      const workouts = await getCourseWorkouts(course._id);
-      if (workouts && workouts.length > 0) {
-        const firstWorkoutId = workouts[0]._id;
-        router.push(`/courses/${course._id}/workouts/${firstWorkoutId}`);
-      } else {
-        // Если тренировок нет, переходим на страницу курса
-        router.push(`/courses/${course._id}`);
+    // Если прогресс 100%, сбрасываем прогресс курса
+    if (progress === 100) {
+      if (loading) return;
+      setLoading(true);
+      try {
+        await resetCourseProgress(course._id);
+        setProgress(0);
+        toast.success('Прогресс курса сброшен!');
+        // Обновляем прогресс после сброса
+        const progressData: ProgressResponse = await getCourseProgress(course._id);
+        if (progressData.workoutsProgress && progressData.workoutsProgress.length > 0) {
+          const completedWorkouts = progressData.workoutsProgress.filter(
+            (wp) => wp.workoutCompleted
+          ).length;
+          const totalWorkouts = progressData.workoutsProgress.length;
+          const progressPercent = Math.round((completedWorkouts / totalWorkouts) * 100);
+          setProgress(progressPercent);
+        } else {
+          setProgress(0);
+        }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Ошибка сброса прогресса';
+        toast.error(errorMessage);
+      } finally {
+        setLoading(false);
       }
-    } catch {
-      // При ошибке переходим на страницу курса
-      router.push(`/courses/${course._id}`);
+    } else {
+      // Открываем модальное окно выбора тренировки
+      setIsWorkoutModalOpen(true);
+    }
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (isProfileCard) {
+      e.preventDefault();
+      e.stopPropagation();
+      // Открываем модальное окно выбора тренировки при клике на карточку в профиле
+      setIsWorkoutModalOpen(true);
     }
   };
 
@@ -295,7 +329,11 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
               onClick={handleContinue}
               className={styles.continueButton}
             >
-              Продолжить
+              {progress === 0 
+                ? 'Начать тренировки' 
+                : progress === 100 
+                ? 'Начать заново' 
+                : 'Продолжить'}
             </button>
           </>
         )}
@@ -304,7 +342,20 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
   );
 
   if (isProfileCard) {
-    return cardContent;
+    return (
+      <>
+        <div onClick={handleCardClick} style={{ cursor: 'pointer' }}>
+          {cardContent}
+        </div>
+        {isWorkoutModalOpen && (
+          <WorkoutSelectionModal
+            courseId={course._id}
+            courseName={course.nameRU}
+            onClose={() => setIsWorkoutModalOpen(false)}
+          />
+        )}
+      </>
+    );
   }
 
   return (

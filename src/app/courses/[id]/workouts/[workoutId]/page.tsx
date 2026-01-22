@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { toast } from 'react-toastify';
 import styles from './WorkoutPage.module.css';
 import { getWorkoutById, getWorkoutProgress, saveWorkoutProgress, getCourseById } from '@/app/services/course/courseApi';
@@ -11,6 +12,7 @@ import SuccessModal from '@/app/components/SuccessModal/SuccessModal';
 
 export default function WorkoutPage() {
   const params = useParams();
+  const router = useRouter();
   const courseId = params.id as string;
   const workoutId = params.workoutId as string;
 
@@ -20,6 +22,7 @@ export default function WorkoutPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [hasProgress, setHasProgress] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,9 +41,11 @@ export default function WorkoutPage() {
             const progressData = await getWorkoutProgress(courseId, workoutId);
             if (progressData && progressData.progressData && progressData.progressData.length > 0) {
               setProgress(progressData);
+              setHasProgress(true);
             } else {
               // Если прогресс пустой, устанавливаем пустой прогресс
               setProgress(null);
+              setHasProgress(false);
             }
           } catch (error) {
             // Если ошибка 500, пробуем еще раз (максимум 3 попытки)
@@ -51,6 +56,7 @@ export default function WorkoutPage() {
             } else {
               // После всех попыток устанавливаем null
               setProgress(null);
+              setHasProgress(false);
             }
           }
         };
@@ -85,6 +91,7 @@ export default function WorkoutPage() {
       progressData: progressData,
     };
     setProgress(localProgress);
+    setHasProgress(true); // Устанавливаем флаг, что прогресс есть
     
     try {
       // Сохраняем прогресс
@@ -99,9 +106,11 @@ export default function WorkoutPage() {
           // Обновляем прогресс только если получили валидные данные
           if (updatedProgress && updatedProgress.progressData && updatedProgress.progressData.length > 0) {
             setProgress(updatedProgress);
+            setHasProgress(true);
           } else if (updatedProgress) {
             // Если прогресс пустой, но ответ успешный, используем локальные данные
             setProgress(localProgress);
+            setHasProgress(true);
           }
         } catch (progressError) {
           // Если не удалось получить прогресс, пробуем еще раз (максимум 5 попыток)
@@ -176,7 +185,15 @@ export default function WorkoutPage() {
   return (
     <div className={styles.workoutPage}>
       {course && (
-        <h1 className={styles.courseTitle}>{course.nameRU}</h1>
+        <>
+          <Link href="/profile" className={styles.backLink}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 12L6 8L10 4" stroke="#2196F3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span>Вернуться к моим курсам</span>
+          </Link>
+          <h1 className={styles.courseTitle}>{course.nameRU}</h1>
+        </>
       )}
       <div className={styles.videoContainer}>
         <div className={styles.videoWrapper}>
@@ -237,7 +254,9 @@ export default function WorkoutPage() {
           className={styles.progressButton}
           onClick={() => setIsModalOpen(true)}
         >
-          Заполнить свой прогресс
+          {hasProgress || (progress && progress.progressData && progress.progressData.length > 0)
+            ? 'Обновить свой прогресс'
+            : 'Заполнить свой прогресс'}
         </button>
       </div>
 

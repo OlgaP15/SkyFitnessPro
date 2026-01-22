@@ -49,7 +49,7 @@ export default function ProfilePage() {
         const currentUser = currentState.auth.user;
         
         // Обновляем данные пользователя, но сохраняем локальные изменения
-        let userData = await getMe();
+        const userData = await getMe();
         
         // Объединяем локальные и серверные данные
         if (currentUser && currentUser.selectedCourses) {
@@ -81,7 +81,7 @@ export default function ProfilePage() {
     };
     
     loadData();
-  }, [isAuth, isChecking, router, dispatch]);
+  }, [isAuth, isChecking, router, dispatch, store]);
 
 
   // Обновляем данные пользователя при возврате на страницу (focus и visibilitychange)
@@ -167,33 +167,6 @@ export default function ProfilePage() {
     router.push('/');
   };
 
-  const handleRefresh = async () => {
-    try {
-      // Получаем текущее состояние перед обновлением
-      const currentState = store.getState();
-      const currentUser = currentState.auth.user;
-      
-      await dispatch(fetchCourses());
-      const userData = await getMe();
-      
-      // Объединяем локальные и серверные данные, приоритет у локальных
-      if (currentUser && currentUser.selectedCourses) {
-        const localCourses = currentUser.selectedCourses;
-        const serverCourses = userData.selectedCourses || [];
-        const allCoursesSet = new Set([...localCourses, ...serverCourses]);
-        userData.selectedCourses = Array.from(allCoursesSet);
-      }
-      
-      dispatch(setUser(userData));
-    } catch {
-      // При ошибке сохраняем локальные данные
-      const currentState = store.getState();
-      const currentUser = currentState.auth.user;
-      if (currentUser && currentUser.selectedCourses && currentUser.selectedCourses.length > 0) {
-        // Не обновляем, оставляем локальные данные
-      }
-    }
-  };
 
   // Принудительно обновляем данные пользователя при монтировании и при изменении курсов
   // НО сохраняем локальные изменения при обновлении
@@ -223,7 +196,7 @@ export default function ProfilePage() {
     };
     
     updateUser();
-  }, [courses.length, isAuth, isChecking, dispatch]);
+  }, [courses.length, isAuth, isChecking, dispatch, store]);
 
   const userCourses = useMemo(() => {
     if (!user || !courses || courses.length === 0) {
@@ -240,13 +213,7 @@ export default function ProfilePage() {
     );
     
     return filtered;
-  }, [
-    user,
-    user?.selectedCourses?.length,
-    user?.selectedCourses?.join(','),
-    courses,
-    courses.length
-  ]);
+  }, [user, courses]);
   
 
   if (isChecking) {
@@ -301,20 +268,6 @@ export default function ProfilePage() {
       <div className={styles.coursesSection}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <h2 className={styles.sectionTitle}>Мои курсы</h2>
-          <button 
-            onClick={handleRefresh}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#BCEC30',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '400'
-            }}
-          >
-            Обновить
-          </button>
         </div>
         {userCourses.length > 0 ? (
           <div 

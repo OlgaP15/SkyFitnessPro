@@ -61,6 +61,12 @@ export interface ProgressResponse {
   workoutsProgress?: WorkoutProgress[];
 }
 
+export interface WorkoutProgressResponse {
+  "id тренировки": string;
+  "завершена ли тренировка": boolean;
+  "данные о прогрессе": number[];
+}
+
 export interface ApiError {
   message: string;
 }
