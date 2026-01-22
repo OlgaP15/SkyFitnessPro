@@ -147,6 +147,10 @@
 }
 
 @media (max-width: 768px) {
+  .profilePage {
+    padding: 40px 16px;
+  }
+
   .profileMain {
     flex-direction: column;
     align-items: flex-start;
@@ -155,6 +159,17 @@
   .profileAvatar {
     margin-right: 0;
     margin-bottom: 30px;
+    width: 141px;
+    height: 141px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .avatarImage {
+    width: 141px;
+    height: 141px;
+    opacity: 1;
+    transform: rotate(0deg);
   }
 
   .profileDivider {
@@ -179,5 +194,17 @@
 
   .coursesGrid {
     justify-content: center;
+  }
+
+  .logoutButton {
+    width: 283px;
+    height: 50px;
+    border-radius: 46px;
+    border-width: 1px;
+    padding: 16px 26px;
+    gap: 10px;
+    opacity: 1;
+    transform: rotate(0deg);
+    box-sizing: border-box;
   }
 }

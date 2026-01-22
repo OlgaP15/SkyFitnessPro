@@ -333,6 +333,10 @@
 }
 
 @media (max-width: 768px) {
+  .coursePage {
+    margin: 0 16px;
+  }
+
   .heroImage {
     width: 100%;
     max-width: 1160px;

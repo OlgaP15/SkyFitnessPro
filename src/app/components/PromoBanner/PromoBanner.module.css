@@ -50,3 +50,9 @@
   opacity: 1;
   object-fit: contain;
 }
+
+@media (max-width: 768px) {
+  .promoBanner {
+    display: none;
+  }
+}

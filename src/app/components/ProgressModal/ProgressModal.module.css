@@ -177,6 +177,10 @@
 }
 
 @media (max-width: 768px) {
+  .modalOverlay {
+    display: none;
+  }
+
   .modalContent {
     max-width: 100%;
     border-radius: 20px;

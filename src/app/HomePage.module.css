@@ -7,6 +7,22 @@
   margin-left: 140px;
 }
 
+@media (max-width: 768px) {
+  .coursesGrid {
+    width: 343px;
+    height: 2632px;
+    position: absolute;
+    top: 254px;
+    left: 16px;
+    gap: 24px;
+    margin-left: 0;
+    padding: 0;
+    justify-content: flex-start;
+    opacity: 1;
+    transform: rotate(0deg);
+  }
+}
+
 .mainContainer {
   max-width: 1440px;
   width: 100%;
@@ -14,6 +30,17 @@
   opacity: 1;
   transform: rotate(0deg);
   position: relative;
+}
+
+@media (max-width: 768px) {
+  .mainContainer {
+    width: 375px;
+    height: 2986px;
+    max-width: 375px;
+    max-height: 3590px;
+    margin: 0 auto;
+    overflow-x: hidden;
+  }
 }
 
 .heading {
@@ -31,10 +58,32 @@
   text-align: left;
 }
 
+@media (max-width: 768px) {
+  .heading {
+    width: 327px;
+    height: 105px;
+    margin: 0;
+    position: absolute;
+    top: 115px;
+    left: 16px;
+    font-size: 32px;
+    line-height: 110%;
+    font-variant-numeric: lining-nums proportional-nums;
+  }
+}
+
 .headingContainer {
   display: flex;
   align-items: center;
   margin: 0px 0 0px 140px;
+}
+
+@media (max-width: 768px) {
+  .headingContainer {
+    margin: 0;
+    position: relative;
+    width: 100%;
+  }
 }
 
 .coursesLink {
@@ -57,6 +106,16 @@
   height: 52px;
   opacity: 1;
   transform: rotate(0deg);
+}
+
+@media (max-width: 768px) {
+  .scrollToTop {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 20px;
+    padding-top: 0;
+    position: fixed;
+  }
 }
 
 .topButton {

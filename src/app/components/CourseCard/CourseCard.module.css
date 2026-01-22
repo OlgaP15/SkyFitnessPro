@@ -265,3 +265,18 @@
 .continueButton:hover {
   opacity: 0.9;
 }
+
+@media (max-width: 768px) {
+  .courseCard {
+    width: 343px;
+    max-width: 343px;
+  }
+
+  .image {
+    width: 343px !important;
+  }
+
+  .courseImage {
+    width: 343px;
+  }
+}

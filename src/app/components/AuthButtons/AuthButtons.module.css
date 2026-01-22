@@ -139,3 +139,25 @@
 .logoutButton:hover {
   background-color: #f3f4f6;
 }
+
+@media (max-width: 768px) {
+  .loginButton {
+    min-width: 80px;
+    min-height: 40px;
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+
+  .modal {
+    top: 60px;
+    right: 16px;
+    left: auto;
+    width: 200px;
+    height: auto;
+  }
+
+  .profileModalButton,
+  .logoutButton {
+    width: 100%;
+  }
+}
