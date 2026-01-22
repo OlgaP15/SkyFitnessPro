@@ -101,12 +101,10 @@ const authSlice = createSlice({
       state.error = null;
     },
     setUser: (state, action: PayloadAction<User>) => {
-      // При обновлении пользователя сохраняем локальные selectedCourses если они есть
       const newUser = { ...action.payload };
       if (state.user && state.user.selectedCourses && state.user.selectedCourses.length > 0) {
         const localCourses = state.user.selectedCourses;
         const serverCourses = newUser.selectedCourses || [];
-        // Объединяем, приоритет у локальных (они идут первыми)
         const allCoursesSet = new Set([...localCourses, ...serverCourses]);
         newUser.selectedCourses = Array.from(allCoursesSet);
       }

@@ -10,14 +10,12 @@ import { Workout, Exercise, ProgressResponse, Course } from '@/types/shared.Type
 import ProgressModal from '@/app/components/ProgressModal/ProgressModal';
 import SuccessModal from '@/app/components/SuccessModal/SuccessModal';
 
-// Подавляем вывод ошибок CORS от YouTube и 500 ошибок в консоль
 if (typeof window !== 'undefined') {
   const originalError = console.error;
   const originalWarn = console.warn;
   
   console.error = (...args: unknown[]) => {
     const message = String(args.join(' '));
-    // Пропускаем ошибки CORS от Google Ads и 500 ошибки от нашего API
     if (
       message.includes('googleads.g.doubleclick.net') ||
       message.includes('CORS policy') ||
@@ -25,14 +23,13 @@ if (typeof window !== 'undefined') {
       (message.includes('PATCH') && message.includes('500')) ||
       (message.includes('net::ERR_FAILED') && message.includes('googleads'))
     ) {
-      return; // Не выводим эти ошибки в консоль
+      return;
     }
     originalError.apply(console, args);
   };
   
   console.warn = (...args: unknown[]) => {
     const message = String(args.join(' '));
-    // Пропускаем предупреждения от Google Ads
     if (
       message.includes('googleads.g.doubleclick.net') ||
       message.includes('CORS policy')
@@ -42,7 +39,6 @@ if (typeof window !== 'undefined') {
     originalWarn.apply(console, args);
   };
   
-  // Перехватываем глобальные ошибки
   window.addEventListener('error', (event) => {
     const message = event.message || '';
     if (
@@ -55,7 +51,6 @@ if (typeof window !== 'undefined') {
     }
   }, true);
   
-  // Перехватываем необработанные промисы
   window.addEventListener('unhandledrejection', (event) => {
     const message = String(event.reason || '');
     if (
@@ -91,10 +86,8 @@ export default function WorkoutPage() {
         setWorkout(workoutData);
         setCourse(courseData);
         
-        // Загружаем прогресс отдельно с повторными попытками
         const fetchProgress = async (attempt = 1) => {
           try {
-            // Сначала проверяем localStorage как резервную копию
             const storageKey = `progress_${courseId}_${workoutId}`;
             const savedProgress = localStorage.getItem(storageKey);
             
@@ -102,10 +95,8 @@ export default function WorkoutPage() {
             if (progressData && progressData.progressData && progressData.progressData.length > 0) {
               setProgress(progressData);
               setHasProgress(true);
-              // Сохраняем в localStorage как резервную копию
               localStorage.setItem(storageKey, JSON.stringify(progressData));
             } else if (savedProgress) {
-              // Если сервер не вернул прогресс, используем сохраненный в localStorage
               try {
                 const parsedProgress = JSON.parse(savedProgress) as ProgressResponse;
                 setProgress(parsedProgress);
@@ -115,18 +106,15 @@ export default function WorkoutPage() {
                 setHasProgress(false);
               }
             } else {
-              // Если прогресс пустой, устанавливаем пустой прогресс
               setProgress(null);
               setHasProgress(false);
             }
           } catch (error) {
-            // Если ошибка 500, пробуем еще раз (максимум 3 попытки)
             const errorStatus = (error as Error & { status?: number })?.status;
             if (errorStatus === 500 && attempt < 3) {
               await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
               fetchProgress(attempt + 1);
             } else {
-              // После всех попыток проверяем localStorage
               const storageKey = `progress_${courseId}_${workoutId}`;
               const savedProgress = localStorage.getItem(storageKey);
               if (savedProgress) {
@@ -163,31 +151,26 @@ export default function WorkoutPage() {
   const handleSaveProgress = async (progressData: number[]) => {
     if (!workout) return;
     
-    // Проверяем, завершена ли тренировка (все упражнения выполнены на 100%)
     const isWorkoutCompleted = workout.exercises.every((exercise, index) => {
       const completed = progressData[index] || 0;
       return completed >= exercise.quantity;
     });
     
-    // Сохраняем локальный прогресс сразу для мгновенного отображения
     const localProgress: ProgressResponse = {
       workoutId,
       workoutCompleted: isWorkoutCompleted,
       progressData: progressData,
     };
     setProgress(localProgress);
-    setHasProgress(true); // Устанавливаем флаг, что прогресс есть
+    setHasProgress(true);
     
-    // Сохраняем прогресс в localStorage как резервную копию
     const storageKey = `progress_${courseId}_${workoutId}`;
     localStorage.setItem(storageKey, JSON.stringify(localProgress));
     
-    // Также сохраняем информацию о завершенности тренировки в общий прогресс курса
     const courseProgressKey = `course_progress_${courseId}`;
     try {
       const courseProgressData = await getCourseProgress(courseId).catch(() => null);
       if (courseProgressData) {
-        // Обновляем информацию о завершенности тренировки
         const updatedWorkoutsProgress = courseProgressData.workoutsProgress || [];
         const workoutIndex = updatedWorkoutsProgress.findIndex((wp: { workoutId: string }) => wp.workoutId === workoutId);
         if (workoutIndex >= 0) {
@@ -203,7 +186,6 @@ export default function WorkoutPage() {
         courseProgressData.workoutsProgress = updatedWorkoutsProgress;
         localStorage.setItem(courseProgressKey, JSON.stringify(courseProgressData));
       } else {
-        // Если прогресс курса не загружен, создаем новый
         const newCourseProgress: ProgressResponse = {
           courseId,
           courseCompleted: false,
@@ -217,65 +199,48 @@ export default function WorkoutPage() {
         localStorage.setItem(courseProgressKey, JSON.stringify(newCourseProgress));
       }
     } catch {
-      // Игнорируем ошибки при сохранении прогресса курса
     }
     
     try {
-      // Сохраняем прогресс
       await saveWorkoutProgress(courseId, workoutId, progressData);
       
-      // Пытаемся получить обновленный прогресс с сервера с задержкой и повторными попытками
-      // Серверу нужно время, чтобы обработать сохранение
       const storageKey = `progress_${courseId}_${workoutId}`;
       const fetchUpdatedProgress = async (attempt = 1) => {
         try {
-          await new Promise(resolve => setTimeout(resolve, 1500 * attempt)); // Увеличена задержка
+          await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
           const updatedProgress = await getWorkoutProgress(courseId, workoutId);
-          // Обновляем прогресс только если получили валидные данные
           if (updatedProgress && updatedProgress.progressData && updatedProgress.progressData.length > 0) {
             setProgress(updatedProgress);
             setHasProgress(true);
-            // Обновляем localStorage с данными с сервера
             localStorage.setItem(storageKey, JSON.stringify(updatedProgress));
           } else if (updatedProgress) {
-            // Если прогресс пустой, но ответ успешный, используем локальные данные
             setProgress(localProgress);
             setHasProgress(true);
             localStorage.setItem(storageKey, JSON.stringify(localProgress));
           }
         } catch (progressError) {
-          // Если не удалось получить прогресс, пробуем еще раз (максимум 5 попыток)
           if (attempt < 5) {
             fetchUpdatedProgress(attempt + 1);
           } else {
-            // После всех попыток используем локальный прогресс
             console.warn('Не удалось получить обновленный прогресс после нескольких попыток, используем локальный прогресс:', progressError);
             setProgress(localProgress);
             setHasProgress(true);
-            // Обновляем localStorage
             localStorage.setItem(storageKey, JSON.stringify(localProgress));
           }
         }
       };
       
-      // Запускаем получение обновленного прогресса в фоне
       fetchUpdatedProgress();
       
-      // Отправляем кастомное событие для обновления модального окна выбора тренировок
       window.dispatchEvent(new CustomEvent('workoutProgressUpdated'));
       
       setIsModalOpen(false);
-      // Показываем модальное окно успеха вместо toast
       setIsSuccessModalOpen(true);
     } catch (error) {
-      // Ошибка уже обработана в saveWorkoutProgress для 500 статуса
-      // Здесь обрабатываем только критические ошибки
       const errorMessage = error instanceof Error ? error.message : 'Ошибка сохранения прогресса';
       const errorStatus = (error as Error & { status?: number })?.status;
       
-      // Для 500 все равно обновляем локальный прогресс и показываем успех
       if (errorStatus === 500) {
-        // Локальный прогресс уже обновлен выше
         setIsModalOpen(false);
         setIsSuccessModalOpen(true);
       } else if (errorStatus !== 500) {

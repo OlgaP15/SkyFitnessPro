@@ -6,7 +6,6 @@ const nextConfig: NextConfig = {
     unoptimized: process.env.NODE_ENV === 'development',
   },
   reactStrictMode: true,
-  // Явно указываем корневую директорию для Turbopack
   turbopack: {
     root: path.resolve(__dirname),
   },

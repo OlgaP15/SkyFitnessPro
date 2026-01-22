@@ -17,7 +17,6 @@ export default function ProgressModal({
   onSave,
   onClose,
 }: ProgressModalProps) {
-  // Используем useMemo для вычисления текущего прогресса
   const computedProgress = workout.exercises.map((exercise, index) => {
     return currentProgress[index] || 0;
   });
@@ -26,18 +25,15 @@ export default function ProgressModal({
   const [errors, setErrors] = useState<string[]>([]);
   const prevProgressRef = useRef<string>('');
 
-  // Обновляем данные когда workout или currentProgress изменились, используя setTimeout для асинхронности
   useEffect(() => {
     const newProgress = workout.exercises.map((exercise, index) => {
       return currentProgress[index] || 0;
     });
     
-    // Используем JSON.stringify для сравнения, чтобы избежать лишних обновлений
     const newProgressKey = JSON.stringify(newProgress);
     const prevProgressKey = prevProgressRef.current;
     
     if (newProgressKey !== prevProgressKey) {
-      // Используем setTimeout для асинхронного обновления, чтобы избежать синхронного setState
       const timer = setTimeout(() => {
         setProgressData(newProgress);
         prevProgressRef.current = newProgressKey;
@@ -57,7 +53,6 @@ export default function ProgressModal({
     updatedProgress[index] = numValue;
     setProgressData(updatedProgress);
     
-    // Очищаем ошибки при изменении
     if (errors[index]) {
       const updatedErrors = [...errors];
       updatedErrors[index] = '';

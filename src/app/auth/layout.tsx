@@ -6,7 +6,6 @@ import { restoreSession } from '../../store/features/authSlice';
 import { useRouter, usePathname } from 'next/navigation';
 import styles from './layout.module.css';
 import classNames from 'classnames';
-
 interface AuthLayoutProps {
   children: ReactNode;
 }

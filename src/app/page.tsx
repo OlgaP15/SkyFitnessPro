@@ -55,7 +55,6 @@ export default function Home() {
   }
 
   const sortedCourses = [...courses].sort((a, b) => {
-    const order = ['йога', 'стретчинг', 'фитнес', 'степ-аэробика', 'бодифлекс'];
     const orderMap = {
       'йога': 0,
       'yoga': 0,

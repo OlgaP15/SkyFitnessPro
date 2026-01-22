@@ -10,7 +10,6 @@ import {
 } from '../courseSlice';
 import { Course } from '@/types/shared.Types';
 
-// Моки для API
 jest.mock('@/app/services/course/courseApi', () => ({
   getCourses: jest.fn(),
   getCourseById: jest.fn(),

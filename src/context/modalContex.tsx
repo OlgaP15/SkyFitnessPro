@@ -19,13 +19,11 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
     const openLogin = useCallback((signin = true) => {
         setIsSignin(signin);
         setIsLoginOpen(true);
-        // Блокируем прокрутку body при открытии модалки
         document.body.style.overflow = 'hidden';
     }, []);
     
     const closeLogin = useCallback(() => {
         setIsLoginOpen(false);
-        // Возвращаем прокрутку body
         document.body.style.overflow = 'unset';
     }, []);
     

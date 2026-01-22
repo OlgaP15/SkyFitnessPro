@@ -5,13 +5,11 @@ import { useRouter } from 'next/navigation';
 import styles from './WorkoutSelectionModal.module.css';
 import { Workout, ProgressResponse } from '@/types/shared.Types';
 import { getCourseWorkouts, getCourseProgress } from '@/app/services/course/courseApi';
-
 interface WorkoutSelectionModalProps {
   courseId: string;
   courseName: string;
   onClose: () => void;
 }
-
 interface WorkoutWithProgress extends Workout {
   completed: boolean;
 }
@@ -32,13 +30,11 @@ export default function WorkoutSelectionModal({
         setLoading(true);
         const workoutsData = await getCourseWorkouts(courseId);
         
-        // Загружаем прогресс отдельно с повторными попытками
         const fetchProgress = async (attempt = 1): Promise<ProgressResponse | null> => {
           try {
             const progressData = await getCourseProgress(courseId);
             return progressData;
           } catch (error) {
-            // Если ошибка 500, пробуем еще раз (максимум 3 попытки)
             const errorStatus = (error as Error & { status?: number })?.status;
             if (errorStatus === 500 && attempt < 3) {
               await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
@@ -50,17 +46,14 @@ export default function WorkoutSelectionModal({
         
         const progressData = await fetchProgress();
 
-        // Создаем карту прогресса для быстрого поиска
         const progressMap = new Map<string, boolean>();
         
-        // Загружаем данные из API
         if (progressData?.workoutsProgress) {
           progressData.workoutsProgress.forEach((wp) => {
             progressMap.set(wp.workoutId, wp.workoutCompleted);
           });
         }
         
-        // Также проверяем localStorage для общего прогресса курса (резервная копия)
         const courseProgressKey = `course_progress_${courseId}`;
         const savedCourseProgress = localStorage.getItem(courseProgressKey);
         if (savedCourseProgress) {
@@ -68,35 +61,29 @@ export default function WorkoutSelectionModal({
             const parsedCourseProgress = JSON.parse(savedCourseProgress) as ProgressResponse;
             if (parsedCourseProgress.workoutsProgress) {
               parsedCourseProgress.workoutsProgress.forEach((wp) => {
-                // Используем данные из localStorage, если их нет в API или если они более свежие
                 if (!progressMap.has(wp.workoutId) || wp.workoutCompleted) {
                   progressMap.set(wp.workoutId, wp.workoutCompleted);
                 }
               });
             }
           } catch {
-            // Игнорируем ошибки парсинга
           }
         }
         
-        // Также проверяем localStorage для каждой тренировки (дополнительная резервная копия)
         workoutsData.forEach((workout) => {
           const storageKey = `progress_${courseId}_${workout._id}`;
           const savedProgress = localStorage.getItem(storageKey);
           if (savedProgress) {
             try {
               const parsedProgress = JSON.parse(savedProgress) as ProgressResponse;
-              // Если тренировка завершена локально, но не в API, используем локальные данные
               if (parsedProgress.workoutCompleted && !progressMap.get(workout._id)) {
                 progressMap.set(workout._id, true);
               }
             } catch {
-              // Игнорируем ошибки парсинга
             }
           }
         });
 
-        // Объединяем данные тренировок с прогрессом
         const workoutsWithProgress: WorkoutWithProgress[] = workoutsData.map((workout) => ({
           ...workout,
           completed: progressMap.get(workout._id) || false,
@@ -104,7 +91,6 @@ export default function WorkoutSelectionModal({
 
         setWorkouts(workoutsWithProgress);
         
-        // Выбираем первую незавершенную тренировку или первую тренировку
         const firstIncomplete = workoutsWithProgress.find((w) => !w.completed);
         if (firstIncomplete) {
           setSelectedWorkoutId(firstIncomplete._id);
@@ -121,13 +107,10 @@ export default function WorkoutSelectionModal({
     if (courseId) {
       fetchWorkouts();
       
-      // Обновляем данные при изменении localStorage (когда прогресс сохраняется)
-      // Используем кастомное событие вместо storage события, так как storage срабатывает только между вкладками
       const handleCustomStorageUpdate = () => {
         fetchWorkouts();
       };
       
-      // Слушаем кастомное событие для обновления данных
       window.addEventListener('workoutProgressUpdated', handleCustomStorageUpdate);
       
       return () => {

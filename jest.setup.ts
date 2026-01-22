@@ -1,4 +1,4 @@
-// jest.setup.js
+// jest.setup.ts
 // Моки для localStorage
 const localStorageMock = {
   getItem: jest.fn(),

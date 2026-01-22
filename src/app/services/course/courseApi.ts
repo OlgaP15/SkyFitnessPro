@@ -13,10 +13,8 @@ async function fetchWithAuth<T>(
   options: Omit<RequestInit, 'headers'> & { headers?: HeadersInit } = {}
 ): Promise<T> {
   const token = localStorage.getItem('token');
-  // Преобразуем HeadersInit в Record<string, string> для работы с заголовками
   const headersObj: Record<string, string> = {};
   
-  // Если options.headers - это объект, копируем его
   if (options.headers) {
     if (options.headers instanceof Headers) {
       options.headers.forEach((value, key) => {
@@ -34,16 +32,9 @@ async function fetchWithAuth<T>(
   if (token) {
     headersObj['Authorization'] = `Bearer ${token}`;
   }
-  // Важно: этот backend может падать, если передать Content-Type: application/json
-  // Явно удаляем Content-Type, если он был установлен
   delete headersObj['Content-Type'];
   delete headersObj['content-type'];
   
-  // Если body - это строка (JSON), не устанавливаем Content-Type вообще
-  // Fetch API не устанавливает Content-Type автоматически для строк, только для FormData, Blob и т.д.
-  // Но на всякий случай убеждаемся, что Content-Type не установлен
-
-  // Создаем новый объект options без headers, чтобы не перезаписать наши заголовки
   const restOptions: Omit<RequestInit, 'headers'> = { ...options };
   delete (restOptions as { headers?: unknown }).headers;
   
@@ -195,18 +186,15 @@ export const getCourseProgress = async (
   courseId: string
 ): Promise<ProgressResponse> => {
   try {
-    // Используем validateStatus, чтобы 500 не считался ошибкой и не логировался в консоль
     const response = await api.get<ProgressResponse>(
       `/api/fitness/users/me/progress?courseId=${courseId}`,
       {
         validateStatus: (status) => {
-          // Принимаем 200-299 и 500 как валидные статусы (500 = данных еще нет, это нормально)
           return (status >= 200 && status < 300) || status === 500;
         }
       }
     );
     
-    // Если сервер вернул 500, возвращаем пустой прогресс
     if (response.status === 500) {
       return {
         courseId,
@@ -222,7 +210,6 @@ export const getCourseProgress = async (
       const errorData = error.response.data as ApiError;
       const errorStatus = error.response.status;
       
-      // Для 500 возвращаем пустой прогресс вместо ошибки
       if (errorStatus === 500) {
         return {
           courseId,
@@ -232,7 +219,6 @@ export const getCourseProgress = async (
         } as ProgressResponse;
       }
       
-      // Для других ошибок сохраняем статус ошибки для обработки в компонентах
       const enhancedError = new Error(errorData.message || 'Ошибка получения прогресса') as Error & { status?: number };
       enhancedError.status = errorStatus;
       throw enhancedError;
@@ -250,13 +236,11 @@ export const getWorkoutProgress = async (
       `/api/fitness/users/me/progress?courseId=${courseId}&workoutId=${workoutId}`,
       {
         validateStatus: (status) => {
-          // Принимаем 200-299 и 500 как валидные статусы (500 = данных еще нет, это нормально)
           return (status >= 200 && status < 300) || status === 500;
         }
       }
     );
     
-    // Если сервер вернул 500, возвращаем пустой прогресс
     if (response.status === 500) {
       return {
         workoutId,
@@ -265,7 +249,6 @@ export const getWorkoutProgress = async (
       } as ProgressResponse;
     }
     
-    // Преобразуем русские ключи в английские для использования в компонентах
     const data = response.data;
     return {
       workoutId: data["id тренировки"],
@@ -277,7 +260,6 @@ export const getWorkoutProgress = async (
       const errorData = error.response.data as ApiError;
       const errorStatus = error.response.status;
       
-      // Для 500 возвращаем пустой прогресс вместо ошибки
       if (errorStatus === 500) {
         return {
           workoutId,
@@ -305,7 +287,6 @@ export const saveWorkoutProgress = async (
   if (token) {
     headersObj['Authorization'] = `Bearer ${token}`;
   }
-  // Важно: этот backend может падать, если передать Content-Type: application/json
   delete headersObj['Content-Type'];
   delete headersObj['content-type'];
 
@@ -323,13 +304,7 @@ export const saveWorkoutProgress = async (
     const isJson = contentType.includes('application/json');
     const body = isJson ? ((await response.json()) as unknown) : await response.text();
 
-    // Если статус 500, считаем операцию успешной (данные могут быть сохранены)
-    // Примечание: браузер все равно покажет ошибку 500 в консоли (Network tab),
-    // это нормальное поведение браузера для неуспешных HTTP-запросов.
-    // Функционально операция считается успешной, и данные сохраняются на сервере.
-    // Подавляем вывод ошибки в консоль для 500 статуса
     if (response.status === 500) {
-      // Подавляем вывод ошибки в консоль, так как это ожидаемое поведение
       return { message: 'Прогресс сохранен' };
     }
 
@@ -345,10 +320,8 @@ export const saveWorkoutProgress = async (
 
     return body as ApiError;
   } catch (error: unknown) {
-    // Если это ошибка сети или другая ошибка, пробрасываем ее
     if (error instanceof Error && 'status' in error) {
       const errorStatus = (error as { status?: number }).status;
-      // Для 500 возвращаем успешный ответ и подавляем вывод ошибки
       if (errorStatus === 500) {
         return { message: 'Прогресс сохранен' };
       }

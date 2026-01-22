@@ -39,14 +39,10 @@ export default function Signin() {
       return;
     }
 
-    try {
-      const result = await dispatch(loginAction({ email, password }));
-      
-      if (loginAction.fulfilled.match(result)) {
-        toast.success('Вход выполнен успешно!');
-      }
-    } catch (err) {
-      // Ошибки обрабатываются через useEffect с error
+    const result = await dispatch(loginAction({ email, password }));
+    
+    if (loginAction.fulfilled.match(result)) {
+      toast.success('Вход выполнен успешно!');
     }
   };
 

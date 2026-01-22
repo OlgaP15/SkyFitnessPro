@@ -18,7 +18,6 @@
     opacity: 1;
 }
 
-/* Стили для формы входа */
 .modal__form.signin {
     width: 360px;
     height: 425px;
@@ -33,7 +32,6 @@
     
 }
 
-/* Стили для формы регистрации */
 .modal__form.signup {
     width: 360px;
     height: 487px;

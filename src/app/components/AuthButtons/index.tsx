@@ -29,7 +29,6 @@ export default function AuthButtons() {
           }
         })
         .catch(() => {
-          // Игнорируем ошибки
         });
     }
   }, [isAuth, userEmail, dispatch]);

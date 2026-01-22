@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import styles from './CourseCard.module.css';
 import { Course, ProgressResponse } from '@/types/shared.Types';
@@ -14,7 +13,6 @@ import { setUser, removeCourseFromUser, addCourseToUser } from '@/store/features
 import { useModal } from '@/context/modalContex';
 import { useAppStore } from '@/store/store';
 import WorkoutSelectionModal from '../WorkoutSelectionModal/WorkoutSelectionModal';
-
 interface CourseCardProps {
   course: Course;
   showMinusIcon?: boolean;
@@ -22,7 +20,6 @@ interface CourseCardProps {
 }
 
 export default function CourseCard({ course, showMinusIcon = false, isProfileCard = false }: CourseCardProps) {
-  const router = useRouter();
   const dispatch = useAppDispatch();
   const store = useAppStore();
   const { isAuth, user } = useAppSelector((state) => state.auth);
@@ -58,35 +55,29 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
     if (isProfileCard) {
       const fetchProgress = async () => {
         try {
-          // Получаем общее количество тренировок в курсе
           const allWorkouts = await getCourseWorkouts(course._id);
           const totalWorkoutsInCourse = allWorkouts.length;
           
-          // Сначала проверяем localStorage для резервной копии
           const courseProgressKey = `course_progress_${course._id}`;
           const savedCourseProgress = localStorage.getItem(courseProgressKey);
           
           const progressData: ProgressResponse = await getCourseProgress(course._id);
           
-          // Используем данные из API, если они есть
           if (progressData.workoutsProgress && progressData.workoutsProgress.length > 0) {
             const completedWorkouts = progressData.workoutsProgress.filter(
               (wp) => wp.workoutCompleted
             ).length;
-            // Используем общее количество тренировок в курсе, а не только те, по которым есть прогресс
             const progressPercent = totalWorkoutsInCourse > 0 
               ? Math.round((completedWorkouts / totalWorkoutsInCourse) * 100)
               : 0;
             setProgress(progressPercent);
           } else if (savedCourseProgress) {
-            // Если API не вернул данные, используем сохраненные из localStorage
             try {
               const parsedProgress = JSON.parse(savedCourseProgress) as ProgressResponse;
               if (parsedProgress.workoutsProgress && parsedProgress.workoutsProgress.length > 0) {
                 const completedWorkouts = parsedProgress.workoutsProgress.filter(
                   (wp) => wp.workoutCompleted
                 ).length;
-                // Используем общее количество тренировок в курсе
                 const progressPercent = totalWorkoutsInCourse > 0 
                   ? Math.round((completedWorkouts / totalWorkoutsInCourse) * 100)
                   : 0;
@@ -101,13 +92,10 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
             setProgress(0);
           }
         } catch (error) {
-          // Игнорируем ошибки 500 - это нормально, если прогресс еще не создан на сервере
           const errorStatus = (error as Error & { status?: number })?.status;
           
-          // Если ошибка 500, проверяем localStorage
           if (errorStatus === 500) {
             try {
-              // Пытаемся получить общее количество тренировок
               const allWorkouts = await getCourseWorkouts(course._id);
               const totalWorkoutsInCourse = allWorkouts.length;
               
@@ -120,7 +108,6 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
                     const completedWorkouts = parsedProgress.workoutsProgress.filter(
                       (wp) => wp.workoutCompleted
                     ).length;
-                    // Используем общее количество тренировок в курсе
                     const progressPercent = totalWorkoutsInCourse > 0 
                       ? Math.round((completedWorkouts / totalWorkoutsInCourse) * 100)
                       : 0;
@@ -145,12 +132,10 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
       
       fetchProgress();
       
-      // Обновляем прогресс каждые 5 секунд, чтобы видеть изменения после сохранения
       const interval = setInterval(() => {
         fetchProgress();
       }, 5000);
       
-      // Также слушаем кастомное событие обновления прогресса тренировки
       const handleProgressUpdate = () => {
         fetchProgress();
       };
@@ -171,17 +156,14 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
     setLoading(true);
     try {
       await deleteUserCourse(course._id);
-      // Сразу удаляем курс из локального состояния для мгновенного отображения
       dispatch(removeCourseFromUser(course._id));
       toast.success('Курс успешно удален!');
       
-      // Затем обновляем данные с сервера в фоне
       setTimeout(async () => {
         try {
           const updatedUser = await getMe();
           dispatch(setUser(updatedUser));
         } catch {
-          // Игнорируем ошибки
         }
       }, 500);
     } catch (error) {
@@ -196,7 +178,6 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
     e.preventDefault();
     e.stopPropagation();
     
-    // Если прогресс 100%, сбрасываем прогресс курса
     if (progress === 100) {
       if (loading) return;
       setLoading(true);
@@ -204,7 +185,6 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
         await resetCourseProgress(course._id);
         setProgress(0);
         toast.success('Прогресс курса сброшен!');
-        // Обновляем прогресс после сброса
         const progressData: ProgressResponse = await getCourseProgress(course._id);
         if (progressData.workoutsProgress && progressData.workoutsProgress.length > 0) {
           const completedWorkouts = progressData.workoutsProgress.filter(
@@ -223,7 +203,6 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
         setLoading(false);
       }
     } else {
-      // Открываем модальное окно выбора тренировки
       setIsWorkoutModalOpen(true);
     }
   };
@@ -232,7 +211,6 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
     if (isProfileCard) {
       e.preventDefault();
       e.stopPropagation();
-      // Открываем модальное окно выбора тренировки при клике на карточку в профиле
       setIsWorkoutModalOpen(true);
     }
   };
@@ -246,7 +224,6 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
       return;
     }
 
-    // Проверяем, не добавлен ли уже курс
     if (user?.selectedCourses?.includes(course._id)) {
       toast.info('Курс уже добавлен');
       return;
@@ -258,18 +235,15 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
     try {
       await addUserCourse(course._id);
       
-      // Сразу добавляем курс в локальное состояние для мгновенного отображения
       dispatch(addCourseToUser(course._id));
       toast.success('Курс успешно добавлен!');
       
-      // Обновляем данные с сервера, но сохраняем локальные изменения
       const updateUserData = async () => {
         try {
           const currentState = store.getState();
           const currentUser = currentState.auth.user;
           const updatedUser = await getMe();
           
-          // Объединяем локальные и серверные данные, приоритет у локальных
           if (currentUser && currentUser.selectedCourses) {
             const localCourses = currentUser.selectedCourses;
             const serverCourses = updatedUser.selectedCourses || [];
@@ -279,20 +253,16 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
           
           dispatch(setUser(updatedUser));
         } catch {
-          // Игнорируем ошибки
         }
       };
       
-      // Обновляем с задержкой, чтобы сервер успел обновиться
       setTimeout(updateUserData, 2000);
       setTimeout(updateUserData, 5000);
     } catch (error) {
-      // Ошибка 500 означает, что курс уже добавлен на сервере или сервер не успел обновиться
       const errorMessage = error instanceof Error ? error.message : '';
       const errorStatus = (error as Error & { status?: number })?.status;
       
       if (errorStatus === 500 || errorMessage.includes('500')) {
-        // Добавляем курс в локальное состояние
         dispatch(addCourseToUser(course._id));
         toast.success('Курс добавлен!');
       } else {
@@ -303,7 +273,6 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
     }
   };
 
-  // Проверяем, добавлен ли курс
   const isCourseAdded = user?.selectedCourses?.includes(course._id) || false;
 
   const imageSrc = getCourseImage(course.nameRU, course.nameEN);

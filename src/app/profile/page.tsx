@@ -18,10 +18,8 @@ export default function ProfilePage() {
   const { courses } = useAppSelector((state) => state.course);
   const [isChecking, setIsChecking] = useState(true);
 
-  // Восстанавливаем сессию при монтировании
   useEffect(() => {
     dispatch(restoreSession());
-    // Даем время на восстановление сессии
     const timer = setTimeout(() => {
       setIsChecking(false);
     }, 100);
@@ -31,27 +29,21 @@ export default function ProfilePage() {
   useEffect(() => {
     if (isChecking) return;
     
-    // Проверяем наличие токена в localStorage
     const token = localStorage.getItem('token');
     if (!token || !isAuth) {
       router.push('/');
       return;
     }
     
-    // Загружаем курсы и обновляем данные пользователя
     const loadData = async () => {
       try {
-        // Загружаем курсы
         await dispatch(fetchCourses());
         
-        // Получаем текущее состояние перед обновлением
         const currentState = store.getState();
         const currentUser = currentState.auth.user;
         
-        // Обновляем данные пользователя, но сохраняем локальные изменения
         const userData = await getMe();
         
-        // Объединяем локальные и серверные данные
         if (currentUser && currentUser.selectedCourses) {
           const localCourses = currentUser.selectedCourses;
           const serverCourses = userData.selectedCourses || [];
@@ -61,21 +53,17 @@ export default function ProfilePage() {
         
         dispatch(setUser(userData));
         
-        // Если selectedCourses пустой, делаем еще несколько попыток, но сохраняем локальные данные
         if (!userData.selectedCourses || userData.selectedCourses.length === 0) {
           const localCourses = currentUser?.selectedCourses || [];
           if (localCourses.length > 0) {
-            // Если есть локальные курсы, сохраняем их
             userData.selectedCourses = localCourses;
             dispatch(setUser(userData));
           }
         }
       } catch {
-        // При ошибке сохраняем локальные данные
         const currentState = store.getState();
         const currentUser = currentState.auth.user;
         if (currentUser && currentUser.selectedCourses && currentUser.selectedCourses.length > 0) {
-          // Не обновляем, оставляем локальные данные
         }
       }
     };
@@ -84,7 +72,6 @@ export default function ProfilePage() {
   }, [isAuth, isChecking, router, dispatch, store]);
 
 
-  // Обновляем данные пользователя при возврате на страницу (focus и visibilitychange)
   useEffect(() => {
     if (!isAuth || isChecking) return;
     
@@ -94,19 +81,16 @@ export default function ProfilePage() {
         const currentUser = currentState.auth.user;
         const userData = await getMe();
         
-        // Объединяем локальные и серверные данные, приоритет у локальных
         if (currentUser && currentUser.selectedCourses) {
           const localCourses = currentUser.selectedCourses;
           const serverCourses = userData.selectedCourses || [];
           
-          // Объединяем курсы, приоритет у локальных
           const allCoursesSet = new Set([...localCourses, ...serverCourses]);
           userData.selectedCourses = Array.from(allCoursesSet);
         }
         
         dispatch(setUser(userData));
       } catch {
-        // Игнорируем ошибки, сохраняем локальные данные
       }
     };
 
@@ -120,7 +104,6 @@ export default function ProfilePage() {
       }
     };
 
-    // Слушаем события изменения localStorage для синхронизации между вкладками
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'user' && e.newValue) {
         try {
@@ -128,7 +111,6 @@ export default function ProfilePage() {
           const currentState = store.getState();
           const currentUser = currentState.auth.user;
           
-          // Объединяем данные из localStorage с текущими локальными данными
           if (currentUser && currentUser.selectedCourses) {
             const localCourses = currentUser.selectedCourses;
             const storageCourses = userData.selectedCourses || [];
@@ -138,7 +120,6 @@ export default function ProfilePage() {
           
           dispatch(setUser(userData));
         } catch {
-          // Игнорируем ошибки парсинга
         }
       }
     };
@@ -147,7 +128,6 @@ export default function ProfilePage() {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('storage', handleStorageChange);
     
-    // Обновляем данные каждые 5 секунд (увеличено, чтобы не перезаписывать локальные данные слишком часто)
     const interval = setInterval(() => {
       if (document.visibilityState === 'visible') {
         updateUserData();
@@ -168,8 +148,6 @@ export default function ProfilePage() {
   };
 
 
-  // Принудительно обновляем данные пользователя при монтировании и при изменении курсов
-  // НО сохраняем локальные изменения при обновлении
   useEffect(() => {
     if (!isAuth || isChecking) return;
     
@@ -179,19 +157,16 @@ export default function ProfilePage() {
         const currentUser = currentState.auth.user;
         const userData = await getMe();
         
-        // Объединяем локальные и серверные данные, приоритет у локальных
         if (currentUser && currentUser.selectedCourses) {
           const localCourses = currentUser.selectedCourses;
           const serverCourses = userData.selectedCourses || [];
           
-          // Объединяем курсы, приоритет у локальных
           const allCoursesSet = new Set([...localCourses, ...serverCourses]);
           userData.selectedCourses = Array.from(allCoursesSet);
         }
         
         dispatch(setUser(userData));
       } catch {
-        // Игнорируем ошибки, сохраняем локальные данные
       }
     };
     

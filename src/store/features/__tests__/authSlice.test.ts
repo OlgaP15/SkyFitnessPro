@@ -12,7 +12,6 @@ import {
 import { User } from '@/types/shared.Types';
 import * as authApi from '@/app/services/auth/authApi';
 
-// Моки для API
 jest.mock('@/app/services/auth/authApi', () => ({
   registerUser: jest.fn(),
   login: jest.fn(),

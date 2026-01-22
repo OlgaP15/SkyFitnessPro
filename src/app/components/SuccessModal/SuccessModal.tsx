@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import styles from './SuccessModal.module.css';
-
 interface SuccessModalProps {
   message: string;
   onClose: () => void;
@@ -10,7 +9,6 @@ interface SuccessModalProps {
 
 export default function SuccessModal({ message, onClose }: SuccessModalProps) {
   useEffect(() => {
-    // Автоматически закрываем модальное окно через 2 секунды
     const timer = setTimeout(() => {
       onClose();
     }, 2000);

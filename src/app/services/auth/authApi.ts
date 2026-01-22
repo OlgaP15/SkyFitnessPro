@@ -101,10 +101,7 @@ export const login = async (
 
 export const getMe = async (): Promise<User> => {
   try {
-    // Добавляем timestamp для предотвращения кеширования
     const response = await api.get<User>(`/api/fitness/users/me?t=${Date.now()}`);
-    // Временное логирование для отладки
-    // eslint-disable-next-line no-console
     console.log('getMe response:', JSON.stringify(response.data, null, 2));
     return response.data;
   } catch (error: unknown) {
