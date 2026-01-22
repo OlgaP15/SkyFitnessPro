@@ -7,6 +7,7 @@ import styles from './WorkoutPage.module.css';
 import { getWorkoutById, getWorkoutProgress, saveWorkoutProgress, getCourseById } from '@/app/services/course/courseApi';
 import { Workout, Exercise, ProgressResponse, Course } from '@/types/shared.Types';
 import ProgressModal from '@/app/components/ProgressModal/ProgressModal';
+import SuccessModal from '@/app/components/SuccessModal/SuccessModal';
 
 export default function WorkoutPage() {
   const params = useParams();
@@ -18,19 +19,43 @@ export default function WorkoutPage() {
   const [progress, setProgress] = useState<ProgressResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [workoutData, courseData, progressData] = await Promise.all([
+        const [workoutData, courseData] = await Promise.all([
           getWorkoutById(workoutId),
           getCourseById(courseId).catch(() => null),
-          getWorkoutProgress(courseId, workoutId).catch(() => null),
         ]);
         setWorkout(workoutData);
         setCourse(courseData);
-        setProgress(progressData);
+        
+        // Загружаем прогресс отдельно с повторными попытками
+        const fetchProgress = async (attempt = 1) => {
+          try {
+            const progressData = await getWorkoutProgress(courseId, workoutId);
+            if (progressData && progressData.progressData && progressData.progressData.length > 0) {
+              setProgress(progressData);
+            } else {
+              // Если прогресс пустой, устанавливаем пустой прогресс
+              setProgress(null);
+            }
+          } catch (error) {
+            // Если ошибка 500, пробуем еще раз (максимум 3 попытки)
+            const errorStatus = (error as Error & { status?: number })?.status;
+            if (errorStatus === 500 && attempt < 3) {
+              await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+              fetchProgress(attempt + 1);
+            } else {
+              // После всех попыток устанавливаем null
+              setProgress(null);
+            }
+          }
+        };
+        
+        fetchProgress();
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Ошибка загрузки данных';
         toast.error(errorMessage);
@@ -45,15 +70,71 @@ export default function WorkoutPage() {
   }, [workoutId, courseId]);
 
   const handleSaveProgress = async (progressData: number[]) => {
+    if (!workout) return;
+    
+    // Проверяем, завершена ли тренировка (все упражнения выполнены на 100%)
+    const isWorkoutCompleted = workout.exercises.every((exercise, index) => {
+      const completed = progressData[index] || 0;
+      return completed >= exercise.quantity;
+    });
+    
+    // Сохраняем локальный прогресс сразу для мгновенного отображения
+    const localProgress: ProgressResponse = {
+      workoutId,
+      workoutCompleted: isWorkoutCompleted,
+      progressData: progressData,
+    };
+    setProgress(localProgress);
+    
     try {
+      // Сохраняем прогресс
       await saveWorkoutProgress(courseId, workoutId, progressData);
-      const updatedProgress = await getWorkoutProgress(courseId, workoutId);
-      setProgress(updatedProgress);
+      
+      // Пытаемся получить обновленный прогресс с сервера с задержкой и повторными попытками
+      // Серверу нужно время, чтобы обработать сохранение
+      const fetchUpdatedProgress = async (attempt = 1) => {
+        try {
+          await new Promise(resolve => setTimeout(resolve, 1500 * attempt)); // Увеличена задержка
+          const updatedProgress = await getWorkoutProgress(courseId, workoutId);
+          // Обновляем прогресс только если получили валидные данные
+          if (updatedProgress && updatedProgress.progressData && updatedProgress.progressData.length > 0) {
+            setProgress(updatedProgress);
+          } else if (updatedProgress) {
+            // Если прогресс пустой, но ответ успешный, используем локальные данные
+            setProgress(localProgress);
+          }
+        } catch (progressError) {
+          // Если не удалось получить прогресс, пробуем еще раз (максимум 5 попыток)
+          if (attempt < 5) {
+            fetchUpdatedProgress(attempt + 1);
+          } else {
+            // После всех попыток используем локальный прогресс
+            console.warn('Не удалось получить обновленный прогресс после нескольких попыток, используем локальный прогресс:', progressError);
+            setProgress(localProgress);
+          }
+        }
+      };
+      
+      // Запускаем получение обновленного прогресса в фоне
+      fetchUpdatedProgress();
+      
       setIsModalOpen(false);
-      toast.success('Прогресс успешно сохранен!');
+      // Показываем модальное окно успеха вместо toast
+      setIsSuccessModalOpen(true);
     } catch (error) {
+      // Ошибка уже обработана в saveWorkoutProgress для 500 статуса
+      // Здесь обрабатываем только критические ошибки
       const errorMessage = error instanceof Error ? error.message : 'Ошибка сохранения прогресса';
-      toast.error(errorMessage);
+      const errorStatus = (error as Error & { status?: number })?.status;
+      
+      // Для 500 все равно обновляем локальный прогресс и показываем успех
+      if (errorStatus === 500) {
+        // Локальный прогресс уже обновлен выше
+        setIsModalOpen(false);
+        setIsSuccessModalOpen(true);
+      } else if (errorStatus !== 500) {
+        toast.error(errorMessage);
+      }
     }
   };
 
@@ -127,7 +208,7 @@ export default function WorkoutPage() {
         <div className={styles.exercisesGrid}>
           {columns.map((column, columnIndex) => (
             <div key={columnIndex} className={styles.exerciseColumn}>
-              {column.map((exercise, exerciseIndex) => {
+              {column.map((exercise) => {
                 const globalIndex = workout.exercises.findIndex(
                   (e) => e._id === exercise._id
                 );
@@ -135,8 +216,16 @@ export default function WorkoutPage() {
                 return (
                   <div key={exercise._id} className={styles.exerciseItem}>
                     <div className={styles.exerciseName}>{exercise.name}</div>
-                    <div className={styles.exerciseProgress}>
-                      {progressPercent}%
+                    <div className={styles.exerciseProgressContainer}>
+                      <div className={styles.exerciseProgress}>
+                        {progressPercent}%
+                      </div>
+                      <div className={styles.progressBar}>
+                        <div 
+                          className={styles.progressBarFill} 
+                          style={{ width: `${progressPercent}%` }}
+                        />
+                      </div>
                     </div>
                   </div>
                 );
@@ -158,6 +247,13 @@ export default function WorkoutPage() {
           currentProgress={progress?.progressData || []}
           onSave={handleSaveProgress}
           onClose={() => setIsModalOpen(false)}
+        />
+      )}
+
+      {isSuccessModalOpen && (
+        <SuccessModal
+          message="Ваш прогресс засчитан!"
+          onClose={() => setIsSuccessModalOpen(false)}
         />
       )}
     </div>
