@@ -1,154 +1,107 @@
-import axios from 'axios';
 import { BASE_URL } from '../constants';
 import {
   Course,
   Workout,
   ProgressResponse,
-  WorkoutProgressResponse,
   ApiError,
 } from '@/types/shared.Types';
 
+/**
+ * Вспомогательная функция для запросов с авторизацией
+ */
 async function fetchWithAuth<T>(
   path: string,
-  options: Omit<RequestInit, 'headers'> & { headers?: HeadersInit } = {}
+  options: RequestInit = {},
 ): Promise<T> {
   const token = localStorage.getItem('token');
-  const headersObj: Record<string, string> = {};
-  
-  if (options.headers) {
-    if (options.headers instanceof Headers) {
-      options.headers.forEach((value, key) => {
-        headersObj[key] = value;
-      });
-    } else if (Array.isArray(options.headers)) {
-      options.headers.forEach(([key, value]) => {
-        headersObj[key] = value;
-      });
-    } else {
-      Object.assign(headersObj, options.headers);
-    }
-  }
+
+  const headers: Record<string, string> = {
+    ...(options.headers as Record<string, string>),
+  };
 
   if (token) {
-    headersObj['Authorization'] = `Bearer ${token}`;
+    headers['Authorization'] = `Bearer ${token}`;
   }
-  delete headersObj['Content-Type'];
-  delete headersObj['content-type'];
-  
-  const restOptions: Omit<RequestInit, 'headers'> = { ...options };
-  delete (restOptions as { headers?: unknown }).headers;
-  
-  const response = await fetch(BASE_URL + path, {
-    ...restOptions,
-    headers: headersObj,
+
+  const response = await fetch(`${BASE_URL}${path}`, {
+    ...options,
+    headers,
   });
 
   const contentType = response.headers.get('content-type') ?? '';
   const isJson = contentType.includes('application/json');
-  const body = isJson ? ((await response.json()) as unknown) : await response.text();
+  const data = isJson ? await response.json() : await response.text();
 
   if (!response.ok) {
     const message =
-      typeof body === 'object' && body && 'message' in (body as Record<string, unknown>)
-        ? String((body as Record<string, unknown>).message)
+      typeof data === 'object' && data?.message
+        ? data.message
         : `Ошибка запроса: ${response.status}`;
     const error = new Error(message) as Error & { status?: number };
     error.status = response.status;
     throw error;
   }
 
-  return body as T;
+  return data as T;
 }
 
-const api = axios.create({
-  baseURL: BASE_URL,
-  transformRequest: [
-    (data, headers) => {
-      if (headers) {
-        delete headers['Content-Type'];
-      }
-      if (typeof data === 'object') {
-        return JSON.stringify(data);
-      }
-      return data;
-    },
-  ],
-});
-
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    if (config.headers && config.headers['Content-Type']) {
-      delete config.headers['Content-Type'];
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
+/**
+ * Получить все курсы
+ * GET /api/fitness/courses
+ */
 export const getCourses = async (): Promise<Course[]> => {
-  try {
-    const response = await api.get<Course[]>('/api/fitness/courses');
-    return response.data;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error) && error.response) {
-      const errorData = error.response.data as ApiError;
-      throw new Error(errorData.message || 'Ошибка получения курсов');
-    }
-    throw error;
+  const response = await fetch(`${BASE_URL}/api/fitness/courses`);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || 'Ошибка получения курсов');
   }
+
+  return data;
 };
 
+/**
+ * Получить один курс по ID
+ * GET /api/fitness/courses/[courseId]
+ */
 export const getCourseById = async (courseId: string): Promise<Course> => {
-  try {
-    const response = await api.get<Course>(
-      `/api/fitness/courses/${courseId}`
-    );
-    return response.data;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error) && error.response) {
-      const errorData = error.response.data as ApiError;
-      throw new Error(errorData.message || 'Ошибка получения курса');
-    }
-    throw error;
+  const response = await fetch(`${BASE_URL}/api/fitness/courses/${courseId}`);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || 'Ошибка получения курса');
   }
+
+  return data;
 };
 
+/**
+ * Получить список тренировок курса
+ * GET /api/fitness/courses/[courseId]/workouts
+ * Требует авторизации
+ */
 export const getCourseWorkouts = async (
-  courseId: string
+  courseId: string,
 ): Promise<Workout[]> => {
-  try {
-    const response = await api.get<Workout[]>(
-      `/api/fitness/courses/${courseId}/workouts`
-    );
-    return response.data;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error) && error.response) {
-      const errorData = error.response.data as ApiError;
-      throw new Error(errorData.message || 'Ошибка получения тренировок');
-    }
-    throw error;
-  }
+  return await fetchWithAuth<Workout[]>(
+    `/api/fitness/courses/${courseId}/workouts`,
+  );
 };
 
+/**
+ * Получить данные по тренировке
+ * GET /api/fitness/workouts/[workoutId]
+ * Требует авторизации
+ */
 export const getWorkoutById = async (workoutId: string): Promise<Workout> => {
-  try {
-    const response = await api.get<Workout>(
-      `/api/fitness/workouts/${workoutId}`
-    );
-    return response.data;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error) && error.response) {
-      const errorData = error.response.data as ApiError;
-      throw new Error(errorData.message || 'Ошибка получения тренировки');
-    }
-    throw error;
-  }
+  return await fetchWithAuth<Workout>(`/api/fitness/workouts/${workoutId}`);
 };
 
+/**
+ * Добавить курс для пользователя
+ * POST /api/fitness/users/me/courses
+ * Требует авторизации
+ */
 export const addUserCourse = async (courseId: string): Promise<ApiError> => {
   return await fetchWithAuth<ApiError>('/api/fitness/users/me/courses', {
     method: 'POST',
@@ -156,187 +109,94 @@ export const addUserCourse = async (courseId: string): Promise<ApiError> => {
   });
 };
 
-export const deleteUserCourse = async (
-  courseId: string
-): Promise<ApiError> => {
+/**
+ * Удалить курс у пользователя
+ * DELETE /api/fitness/users/me/courses/[courseId]
+ * Требует авторизации
+ */
+export const deleteUserCourse = async (courseId: string): Promise<ApiError> => {
   return await fetchWithAuth<ApiError>(
     `/api/fitness/users/me/courses/${courseId}`,
-    { method: 'DELETE' }
+    {
+      method: 'DELETE',
+    },
   );
 };
 
+/**
+ * Удалить весь прогресс по курсу
+ * PATCH /api/fitness/courses/[courseId]/reset
+ * Требует авторизации
+ */
 export const resetCourseProgress = async (
-  courseId: string
+  courseId: string,
 ): Promise<ApiError> => {
-  try {
-    const response = await api.patch<ApiError>(
-      `/api/fitness/courses/${courseId}/reset`
-    );
-    return response.data;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error) && error.response) {
-      const errorData = error.response.data as ApiError;
-      throw new Error(errorData.message || 'Ошибка сброса прогресса');
-    }
-    throw error;
-  }
+  return await fetchWithAuth<ApiError>(
+    `/api/fitness/courses/${courseId}/reset`,
+    {
+      method: 'PATCH',
+    },
+  );
 };
 
+/**
+ * Получить прогресс пользователя по всему курсу
+ * GET /api/fitness/users/me/progress?courseId={courseId}
+ * Требует авторизации
+ */
 export const getCourseProgress = async (
-  courseId: string
+  courseId: string,
 ): Promise<ProgressResponse> => {
-  try {
-    const response = await api.get<ProgressResponse>(
-      `/api/fitness/users/me/progress?courseId=${courseId}`,
-      {
-        validateStatus: (status) => {
-          return (status >= 200 && status < 300) || status === 500;
-        }
-      }
-    );
-    
-    if (response.status === 500) {
-      return {
-        courseId,
-        courseCompleted: false,
-        workoutsProgress: [],
-        progressData: [],
-      } as ProgressResponse;
-    }
-    
-    return response.data;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error) && error.response) {
-      const errorData = error.response.data as ApiError;
-      const errorStatus = error.response.status;
-      
-      if (errorStatus === 500) {
-        return {
-          courseId,
-          courseCompleted: false,
-          workoutsProgress: [],
-          progressData: [],
-        } as ProgressResponse;
-      }
-      
-      const enhancedError = new Error(errorData.message || 'Ошибка получения прогресса') as Error & { status?: number };
-      enhancedError.status = errorStatus;
-      throw enhancedError;
-    }
-    throw error;
-  }
+  return await fetchWithAuth<ProgressResponse>(
+    `/api/fitness/users/me/progress?courseId=${courseId}`,
+  );
 };
 
+/**
+ * Получить прогресс пользователя по тренировке
+ * GET /api/fitness/users/me/progress?courseId={courseId}&workoutId={workoutID}
+ * Требует авторизации
+ */
 export const getWorkoutProgress = async (
   courseId: string,
-  workoutId: string
+  workoutId: string,
 ): Promise<ProgressResponse> => {
-  try {
-    const response = await api.get<WorkoutProgressResponse>(
-      `/api/fitness/users/me/progress?courseId=${courseId}&workoutId=${workoutId}`,
-      {
-        validateStatus: (status) => {
-          return (status >= 200 && status < 300) || status === 500;
-        }
-      }
-    );
-    
-    if (response.status === 500) {
-      return {
-        workoutId,
-        workoutCompleted: false,
-        progressData: [],
-      } as ProgressResponse;
-    }
-    
-    const data = response.data;
-    return {
-      workoutId: data["id тренировки"],
-      workoutCompleted: data["завершена ли тренировка"],
-      progressData: data["данные о прогрессе"],
-    } as ProgressResponse;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error) && error.response) {
-      const errorData = error.response.data as ApiError;
-      const errorStatus = error.response.status;
-      
-      if (errorStatus === 500) {
-        return {
-          workoutId,
-          workoutCompleted: false,
-          progressData: [],
-        } as ProgressResponse;
-      }
-      
-      throw new Error(
-        errorData.message || 'Ошибка получения прогресса тренировки'
-      );
-    }
-    throw error;
-  }
+  return await fetchWithAuth<ProgressResponse>(
+    `/api/fitness/users/me/progress?courseId=${courseId}&workoutId=${workoutId}`,
+  );
 };
 
+/**
+ * Сохранить прогресс тренировки
+ * PATCH /api/fitness/courses/[courseId]/workouts/[workoutId]
+ * Требует авторизации
+ */
 export const saveWorkoutProgress = async (
   courseId: string,
   workoutId: string,
-  progressData: number[]
+  progressData: number[],
 ): Promise<ApiError> => {
-  const token = localStorage.getItem('token');
-  const headersObj: Record<string, string> = {};
-
-  if (token) {
-    headersObj['Authorization'] = `Bearer ${token}`;
-  }
-  delete headersObj['Content-Type'];
-  delete headersObj['content-type'];
-
-  try {
-    const response = await fetch(
-      `${BASE_URL}/api/fitness/courses/${courseId}/workouts/${workoutId}`,
-      {
-        method: 'PATCH',
-        headers: headersObj,
-        body: JSON.stringify({ "данные о прогрессе": progressData }),
-      }
-    );
-
-    const contentType = response.headers.get('content-type') ?? '';
-    const isJson = contentType.includes('application/json');
-    const body = isJson ? ((await response.json()) as unknown) : await response.text();
-
-    if (response.status === 500) {
-      return { message: 'Прогресс сохранен' };
-    }
-
-    if (!response.ok) {
-      const message =
-        typeof body === 'object' && body && 'message' in (body as Record<string, unknown>)
-          ? String((body as Record<string, unknown>).message)
-          : `Ошибка запроса: ${response.status}`;
-      const error = new Error(message) as Error & { status?: number };
-      error.status = response.status;
-      throw error;
-    }
-
-    return body as ApiError;
-  } catch (error: unknown) {
-    if (error instanceof Error && 'status' in error) {
-      const errorStatus = (error as { status?: number }).status;
-      if (errorStatus === 500) {
-        return { message: 'Прогресс сохранен' };
-      }
-    }
-    throw error;
-  }
+  return await fetchWithAuth<ApiError>(
+    `/api/fitness/courses/${courseId}/workouts/${workoutId}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ progressData }),
+    },
+  );
 };
 
+/**
+ * Удалить весь прогресс по тренировке
+ * PATCH /api/fitness/courses/[courseId]/workouts/[workoutId]/reset
+ * Требует авторизации
+ */
 export const resetWorkoutProgress = async (
   courseId: string,
-  workoutId: string
+  workoutId: string,
 ): Promise<ApiError> => {
   return await fetchWithAuth<ApiError>(
     `/api/fitness/courses/${courseId}/workouts/${workoutId}/reset`,
-    { method: 'PATCH' }
+    { method: 'PATCH' },
   );
 };
 

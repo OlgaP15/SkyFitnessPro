@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import styles from './CoursePage.module.css';
 import { useAppDispatch, useAppSelector, useAppStore } from '@/store/store';
 import { fetchCourseById } from '@/store/features/courseSlice';
-import { useModal } from '@/context/modalContex';
+import { useModal } from '@/context/modalContext';
 import { addUserCourse } from '@/app/services/course/courseApi';
 import { getMe } from '@/app/services/auth/authApi';
 import { setUser, addCourseToUser } from '@/store/features/authSlice';

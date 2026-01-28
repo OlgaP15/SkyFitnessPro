@@ -1,6 +1,6 @@
 'use client'
 
-import { useModal } from "@/context/modalContex"
+import { useModal } from "@/context/modalContext"
 import style from './style.module.css'
 import { useEffect } from 'react'
 import { useAppSelector } from '@/store/store'

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import styles from './AuthButtons.module.css';
 import { useAppDispatch, useAppSelector } from '../../../store/store';
-import { useModal } from '@/context/modalContex';
+import { useModal } from '@/context/modalContext';
 import { getMe } from '@/app/services/auth/authApi';
 import { setUser, logout } from '@/store/features/authSlice';
 

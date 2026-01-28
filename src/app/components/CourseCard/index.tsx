@@ -6,11 +6,21 @@ import Link from 'next/link';
 import { toast } from 'react-toastify';
 import styles from './CourseCard.module.css';
 import { Course, ProgressResponse } from '@/types/shared.Types';
-import { getCourseProgress, deleteUserCourse, addUserCourse, resetCourseProgress, getCourseWorkouts } from '@/app/services/course/courseApi';
+import {
+  getCourseProgress,
+  deleteUserCourse,
+  addUserCourse,
+  resetCourseProgress,
+  getCourseWorkouts,
+} from '@/app/services/course/courseApi';
 import { getMe } from '@/app/services/auth/authApi';
 import { useAppDispatch, useAppSelector } from '@/store/store';
-import { setUser, removeCourseFromUser, addCourseToUser } from '@/store/features/authSlice';
-import { useModal } from '@/context/modalContex';
+import {
+  setUser,
+  removeCourseFromUser,
+  addCourseToUser,
+} from '@/store/features/authSlice';
+import { useModal } from '@/context/modalContext';
 import { useAppStore } from '@/store/store';
 import WorkoutSelectionModal from '../WorkoutSelectionModal/WorkoutSelectionModal';
 interface CourseCardProps {
@@ -19,7 +29,11 @@ interface CourseCardProps {
   isProfileCard?: boolean;
 }
 
-export default function CourseCard({ course, showMinusIcon = false, isProfileCard = false }: CourseCardProps) {
+export default function CourseCard({
+  course,
+  showMinusIcon = false,
+  isProfileCard = false,
+}: CourseCardProps) {
   const dispatch = useAppDispatch();
   const store = useAppStore();
   const { isAuth, user } = useAppSelector((state) => state.auth);
@@ -27,9 +41,7 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
   const [progress, setProgress] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [isWorkoutModalOpen, setIsWorkoutModalOpen] = useState(false);
-  const duration = course.durationInDays
-    ? `${course.durationInDays} дней`
-    : '';
+  const duration = course.durationInDays ? `${course.durationInDays} дней` : '';
   const timePerDay = course.dailyDurationInMinutes
     ? `${course.dailyDurationInMinutes.from}-${course.dailyDurationInMinutes.to} мин/день`
     : '';
@@ -48,7 +60,11 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
       бодифлекс: '/images/bodyflex.jpg',
       bodyflex: '/images/bodyflex.jpg',
     };
-    return images[nameRU.toLowerCase()] || images[nameEN.toLowerCase()] || '/images/yoga.jpg';
+    return (
+      images[nameRU.toLowerCase()] ||
+      images[nameEN.toLowerCase()] ||
+      '/images/yoga.jpg'
+    );
   };
 
   useEffect(() => {
@@ -57,30 +73,45 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
         try {
           const allWorkouts = await getCourseWorkouts(course._id);
           const totalWorkoutsInCourse = allWorkouts.length;
-          
+
           const courseProgressKey = `course_progress_${course._id}`;
           const savedCourseProgress = localStorage.getItem(courseProgressKey);
-          
-          const progressData: ProgressResponse = await getCourseProgress(course._id);
-          
-          if (progressData.workoutsProgress && progressData.workoutsProgress.length > 0) {
+
+          const progressData: ProgressResponse = await getCourseProgress(
+            course._id,
+          );
+
+          if (
+            progressData.workoutsProgress &&
+            progressData.workoutsProgress.length > 0
+          ) {
             const completedWorkouts = progressData.workoutsProgress.filter(
-              (wp) => wp.workoutCompleted
+              (wp) => wp.workoutCompleted,
             ).length;
-            const progressPercent = totalWorkoutsInCourse > 0 
-              ? Math.round((completedWorkouts / totalWorkoutsInCourse) * 100)
-              : 0;
+            const progressPercent =
+              totalWorkoutsInCourse > 0
+                ? Math.round((completedWorkouts / totalWorkoutsInCourse) * 100)
+                : 0;
             setProgress(progressPercent);
           } else if (savedCourseProgress) {
             try {
-              const parsedProgress = JSON.parse(savedCourseProgress) as ProgressResponse;
-              if (parsedProgress.workoutsProgress && parsedProgress.workoutsProgress.length > 0) {
-                const completedWorkouts = parsedProgress.workoutsProgress.filter(
-                  (wp) => wp.workoutCompleted
-                ).length;
-                const progressPercent = totalWorkoutsInCourse > 0 
-                  ? Math.round((completedWorkouts / totalWorkoutsInCourse) * 100)
-                  : 0;
+              const parsedProgress = JSON.parse(
+                savedCourseProgress,
+              ) as ProgressResponse;
+              if (
+                parsedProgress.workoutsProgress &&
+                parsedProgress.workoutsProgress.length > 0
+              ) {
+                const completedWorkouts =
+                  parsedProgress.workoutsProgress.filter(
+                    (wp) => wp.workoutCompleted,
+                  ).length;
+                const progressPercent =
+                  totalWorkoutsInCourse > 0
+                    ? Math.round(
+                        (completedWorkouts / totalWorkoutsInCourse) * 100,
+                      )
+                    : 0;
                 setProgress(progressPercent);
               } else {
                 setProgress(0);
@@ -93,24 +124,34 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
           }
         } catch (error) {
           const errorStatus = (error as Error & { status?: number })?.status;
-          
+
           if (errorStatus === 500) {
             try {
               const allWorkouts = await getCourseWorkouts(course._id);
               const totalWorkoutsInCourse = allWorkouts.length;
-              
+
               const courseProgressKey = `course_progress_${course._id}`;
-              const savedCourseProgress = localStorage.getItem(courseProgressKey);
+              const savedCourseProgress =
+                localStorage.getItem(courseProgressKey);
               if (savedCourseProgress) {
                 try {
-                  const parsedProgress = JSON.parse(savedCourseProgress) as ProgressResponse;
-                  if (parsedProgress.workoutsProgress && parsedProgress.workoutsProgress.length > 0) {
-                    const completedWorkouts = parsedProgress.workoutsProgress.filter(
-                      (wp) => wp.workoutCompleted
-                    ).length;
-                    const progressPercent = totalWorkoutsInCourse > 0 
-                      ? Math.round((completedWorkouts / totalWorkoutsInCourse) * 100)
-                      : 0;
+                  const parsedProgress = JSON.parse(
+                    savedCourseProgress,
+                  ) as ProgressResponse;
+                  if (
+                    parsedProgress.workoutsProgress &&
+                    parsedProgress.workoutsProgress.length > 0
+                  ) {
+                    const completedWorkouts =
+                      parsedProgress.workoutsProgress.filter(
+                        (wp) => wp.workoutCompleted,
+                      ).length;
+                    const progressPercent =
+                      totalWorkoutsInCourse > 0
+                        ? Math.round(
+                            (completedWorkouts / totalWorkoutsInCourse) * 100,
+                          )
+                        : 0;
                     setProgress(progressPercent);
                   } else {
                     setProgress(0);
@@ -129,21 +170,19 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
           }
         }
       };
-      
+
       fetchProgress();
-      
-      const interval = setInterval(() => {
-        fetchProgress();
-      }, 5000);
-      
+
       const handleProgressUpdate = () => {
         fetchProgress();
       };
       window.addEventListener('workoutProgressUpdated', handleProgressUpdate);
-      
+
       return () => {
-        clearInterval(interval);
-        window.removeEventListener('workoutProgressUpdated', handleProgressUpdate);
+        window.removeEventListener(
+          'workoutProgressUpdated',
+          handleProgressUpdate,
+        );
       };
     }
   }, [isProfileCard, course._id]);
@@ -152,22 +191,22 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
     e.preventDefault();
     e.stopPropagation();
     if (loading) return;
-    
+
     setLoading(true);
     try {
       await deleteUserCourse(course._id);
       dispatch(removeCourseFromUser(course._id));
       toast.success('Курс успешно удален!');
-      
+
       setTimeout(async () => {
         try {
           const updatedUser = await getMe();
           dispatch(setUser(updatedUser));
-        } catch {
-        }
+        } catch {}
       }, 500);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Ошибка удаления курса';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Ошибка удаления курса';
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -177,7 +216,7 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
   const handleContinue = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (progress === 100) {
       if (loading) return;
       setLoading(true);
@@ -185,19 +224,27 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
         await resetCourseProgress(course._id);
         setProgress(0);
         toast.success('Прогресс курса сброшен!');
-        const progressData: ProgressResponse = await getCourseProgress(course._id);
-        if (progressData.workoutsProgress && progressData.workoutsProgress.length > 0) {
+        const progressData: ProgressResponse = await getCourseProgress(
+          course._id,
+        );
+        if (
+          progressData.workoutsProgress &&
+          progressData.workoutsProgress.length > 0
+        ) {
           const completedWorkouts = progressData.workoutsProgress.filter(
-            (wp) => wp.workoutCompleted
+            (wp) => wp.workoutCompleted,
           ).length;
           const totalWorkouts = progressData.workoutsProgress.length;
-          const progressPercent = Math.round((completedWorkouts / totalWorkouts) * 100);
+          const progressPercent = Math.round(
+            (completedWorkouts / totalWorkouts) * 100,
+          );
           setProgress(progressPercent);
         } else {
           setProgress(0);
         }
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Ошибка сброса прогресса';
+        const errorMessage =
+          error instanceof Error ? error.message : 'Ошибка сброса прогресса';
         toast.error(errorMessage);
       } finally {
         setLoading(false);
@@ -218,7 +265,7 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
   const handleAddCourse = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (!isAuth) {
       openLogin();
       return;
@@ -230,38 +277,37 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
     }
 
     if (loading) return;
-    
+
     setLoading(true);
     try {
       await addUserCourse(course._id);
-      
+
       dispatch(addCourseToUser(course._id));
       toast.success('Курс успешно добавлен!');
-      
+
       const updateUserData = async () => {
         try {
           const currentState = store.getState();
           const currentUser = currentState.auth.user;
           const updatedUser = await getMe();
-          
+
           if (currentUser && currentUser.selectedCourses) {
             const localCourses = currentUser.selectedCourses;
             const serverCourses = updatedUser.selectedCourses || [];
             const allCoursesSet = new Set([...localCourses, ...serverCourses]);
             updatedUser.selectedCourses = Array.from(allCoursesSet);
           }
-          
+
           dispatch(setUser(updatedUser));
-        } catch {
-        }
+        } catch {}
       };
-      
+
       setTimeout(updateUserData, 2000);
       setTimeout(updateUserData, 5000);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '';
       const errorStatus = (error as Error & { status?: number })?.status;
-      
+
       if (errorStatus === 500 || errorMessage.includes('500')) {
         dispatch(addCourseToUser(course._id));
         toast.success('Курс добавлен!');
@@ -278,8 +324,12 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
   const imageSrc = getCourseImage(course.nameRU, course.nameEN);
 
   const cardContent = (
-    <div className={`${styles.courseCard} ${isProfileCard ? styles.profileCard : ''}`}>
-      <div className={`${styles.courseImage} ${isProfileCard ? styles.profileImage : ''}`}>
+    <div
+      className={`${styles.courseCard} ${isProfileCard ? styles.profileCard : ''}`}
+    >
+      <div
+        className={`${styles.courseImage} ${isProfileCard ? styles.profileImage : ''}`}
+      >
         <Image
           src={imageSrc}
           alt={course.nameRU}
@@ -334,12 +384,7 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
                 height={20}
               />
               <span className={styles.courseParam}>{duration}</span>
-              <Image
-                src="/img/Icon.svg"
-                alt="Время"
-                width={20}
-                height={20}
-              />
+              <Image src="/img/Icon.svg" alt="Время" width={20} height={20} />
               <span className={styles.courseParam}>{timePerDay}</span>
             </div>
           </div>
@@ -361,21 +406,18 @@ export default function CourseCard({ course, showMinusIcon = false, isProfileCar
             <div className={styles.progressSection}>
               <span className={styles.progressText}>Прогресс {progress}%</span>
               <div className={styles.progressBar}>
-                <div 
-                  className={styles.progressFill} 
+                <div
+                  className={styles.progressFill}
                   style={{ width: `${progress}%` }}
                 />
               </div>
             </div>
-            <button
-              onClick={handleContinue}
-              className={styles.continueButton}
-            >
-              {progress === 0 
-                ? 'Начать тренировки' 
-                : progress === 100 
-                ? 'Начать заново' 
-                : 'Продолжить'}
+            <button onClick={handleContinue} className={styles.continueButton}>
+              {progress === 0
+                ? 'Начать тренировки'
+                : progress === 100
+                  ? 'Начать заново'
+                  : 'Продолжить'}
             </button>
           </>
         )}

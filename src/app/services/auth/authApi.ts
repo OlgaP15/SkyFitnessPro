@@ -1,60 +1,35 @@
-import axios from 'axios';
 import { BASE_URL } from '../constants';
 import { User, LoginResponse, RegisterResponse } from '@/types/shared.Types';
 
-const api = axios.create({
-  baseURL: BASE_URL,
-});
-
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
+/**
+ * Регистрация нового пользователя
+ * POST /api/fitness/auth/register
+ */
 export const registerUser = async (
   email: string,
-  password: string
+  password: string,
 ): Promise<RegisterResponse> => {
-  try {
-    const token = localStorage.getItem('token');
-    const headers: HeadersInit = {};
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+  const response = await fetch(`${BASE_URL}/api/fitness/auth/register`, {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
 
-    const response = await fetch(BASE_URL + '/api/fitness/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-      headers,
-    });
+  const data = await response.json();
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Ошибка регистрации' }));
-      throw new Error(errorData.message || 'Ошибка регистрации');
-    }
-
-    return await response.json();
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error('Ошибка регистрации');
+  if (!response.ok) {
+    throw new Error(data.message || 'Ошибка регистрации');
   }
+
+  return data;
 };
 
+/**
+ * Авторизация пользователя
+ * POST /api/fitness/auth/login
+ */
 export const login = async (
   email: string,
-  password: string
+  password: string,
 ): Promise<LoginResponse> => {
   if (!email || !email.trim()) {
     throw new Error('Email обязателен для входа');
@@ -63,65 +38,49 @@ export const login = async (
     throw new Error('Пароль обязателен для входа');
   }
 
-  try {
-    const token = localStorage.getItem('token');
-    const headers: HeadersInit = {};
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+  const response = await fetch(`${BASE_URL}/api/fitness/auth/login`, {
+    method: 'POST',
+    body: JSON.stringify({
+      email: email.trim(),
+      password,
+    }),
+  });
 
-    const response = await fetch(BASE_URL + '/api/fitness/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({
-        email: email.trim(),
-        password,
-      }),
-      headers,
-    });
+  const data = await response.json();
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Ошибка входа' }));
-      const message = errorData.message || 'Ошибка входа';
-      
-      if (response.status === 404) {
-        throw new Error(message || 'Пользователь с таким email не найден');
-      }
-      throw new Error(message || `Ошибка сервера: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error('Ошибка входа');
+  if (!response.ok) {
+    throw new Error(data.message || 'Ошибка входа');
   }
+
+  return data;
 };
 
+/**
+ * Получить данные текущего пользователя
+ * GET /api/fitness/users/me
+ * Требует авторизации
+ */
 export const getMe = async (): Promise<User> => {
-  try {
-    const response = await api.get<User>(`/api/fitness/users/me?t=${Date.now()}`);
-    console.log('getMe response:', JSON.stringify(response.data, null, 2));
-    return response.data;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error) && error.response) {
-      const errorData = error.response.data;
-      const message =
-        typeof errorData === 'object' && errorData !== null
-          ? errorData.message || JSON.stringify(errorData)
-          : typeof errorData === 'string'
-            ? errorData
-            : 'Ошибка получения данных пользователя';
-      throw new Error(message);
-    } else if (axios.isAxiosError(error) && error.request) {
-      throw new Error('Нет ответа от сервера. Проверьте подключение к интернету.');
-    } else {
-      throw error instanceof Error
-        ? error
-        : new Error('Ошибка получения данных пользователя');
-    }
+  const token = localStorage.getItem('token');
+
+  if (!token) {
+    throw new Error('Токен авторизации не найден');
   }
+
+  const response = await fetch(`${BASE_URL}/api/fitness/users/me`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || 'Ошибка получения данных пользователя');
+  }
+
+  return data;
 };
 
 export const authAPI = {

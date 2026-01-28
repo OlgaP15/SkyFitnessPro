@@ -4,7 +4,7 @@ import ReduxProvider from '../store/ReduxProvider';
 import './globals.css';
 import 'react-toastify/dist/ReactToastify.css';
 import Navigation from './components/Navigation/Navigation';
-import { ModalProvider } from '@/context/modalContex';
+import { ModalProvider } from '@/context/modalContext';
 import LoginModal from './components/LoginModal/LoginModal';
 import { ToastContainer } from 'react-toastify';
 
