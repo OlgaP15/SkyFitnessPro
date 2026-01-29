@@ -67,7 +67,7 @@ export default function AuthButtons() {
       }
     }
     
-    return 'Профиль';
+    return 'Профиль'; //спросить как поставить
   };
 
   const handleLogout = () => {

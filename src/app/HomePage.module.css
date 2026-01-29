@@ -12,7 +12,7 @@
     width: 343px;
     height: 2632px;
     position: absolute;
-    top: 254px;
+    top: 165px;
     left: 16px;
     gap: 24px;
     margin-left: 0;
@@ -35,9 +35,9 @@
 @media (max-width: 768px) {
   .mainContainer {
     width: 375px;
-    height: 2986px;
+    height: 2900px;
     max-width: 375px;
-    max-height: 3590px;
+    max-height: 2900px;
     margin: 0 auto;
     overflow-x: hidden;
   }
@@ -64,7 +64,7 @@
     height: 105px;
     margin: 0;
     position: absolute;
-    top: 115px;
+    top: 0px;
     left: 16px;
     font-size: 32px;
     line-height: 110%;
