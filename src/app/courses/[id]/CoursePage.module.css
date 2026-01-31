@@ -432,8 +432,6 @@
 
   .startSection {
     max-width: 343px;
-    margin-left: auto;
-    margin-right: auto;
   }
 
   .startCard {
@@ -519,5 +517,9 @@
     bottom: auto;
     width: 40px;
     height: 34px;
+  }
+
+  .suitableSection {
+    max-width: 343px;
   }
 }
