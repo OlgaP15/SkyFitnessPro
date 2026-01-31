@@ -20,6 +20,10 @@ import {
   removeCourseFromUser,
   addCourseToUser,
 } from '@/store/features/authSlice';
+import {
+  addPendingCourse,
+  removePendingCourse,
+} from '@/app/services/pendingCourses';
 import { useModal } from '@/context/modalContext';
 import { useAppStore } from '@/store/store';
 import WorkoutSelectionModal from '../WorkoutSelectionModal/WorkoutSelectionModal';
@@ -74,9 +78,6 @@ export default function CourseCard({
           const allWorkouts = await getCourseWorkouts(course._id);
           const totalWorkoutsInCourse = allWorkouts.length;
 
-          const courseProgressKey = `course_progress_${course._id}`;
-          const savedCourseProgress = localStorage.getItem(courseProgressKey);
-
           const progressData: ProgressResponse = await getCourseProgress(
             course._id,
           );
@@ -93,81 +94,11 @@ export default function CourseCard({
                 ? Math.round((completedWorkouts / totalWorkoutsInCourse) * 100)
                 : 0;
             setProgress(progressPercent);
-          } else if (savedCourseProgress) {
-            try {
-              const parsedProgress = JSON.parse(
-                savedCourseProgress,
-              ) as ProgressResponse;
-              if (
-                parsedProgress.workoutsProgress &&
-                parsedProgress.workoutsProgress.length > 0
-              ) {
-                const completedWorkouts =
-                  parsedProgress.workoutsProgress.filter(
-                    (wp) => wp.workoutCompleted,
-                  ).length;
-                const progressPercent =
-                  totalWorkoutsInCourse > 0
-                    ? Math.round(
-                        (completedWorkouts / totalWorkoutsInCourse) * 100,
-                      )
-                    : 0;
-                setProgress(progressPercent);
-              } else {
-                setProgress(0);
-              }
-            } catch {
-              setProgress(0);
-            }
           } else {
             setProgress(0);
           }
-        } catch (error) {
-          const errorStatus = (error as Error & { status?: number })?.status;
-
-          if (errorStatus === 500) {
-            try {
-              const allWorkouts = await getCourseWorkouts(course._id);
-              const totalWorkoutsInCourse = allWorkouts.length;
-
-              const courseProgressKey = `course_progress_${course._id}`;
-              const savedCourseProgress =
-                localStorage.getItem(courseProgressKey);
-              if (savedCourseProgress) {
-                try {
-                  const parsedProgress = JSON.parse(
-                    savedCourseProgress,
-                  ) as ProgressResponse;
-                  if (
-                    parsedProgress.workoutsProgress &&
-                    parsedProgress.workoutsProgress.length > 0
-                  ) {
-                    const completedWorkouts =
-                      parsedProgress.workoutsProgress.filter(
-                        (wp) => wp.workoutCompleted,
-                      ).length;
-                    const progressPercent =
-                      totalWorkoutsInCourse > 0
-                        ? Math.round(
-                            (completedWorkouts / totalWorkoutsInCourse) * 100,
-                          )
-                        : 0;
-                    setProgress(progressPercent);
-                  } else {
-                    setProgress(0);
-                  }
-                } catch {
-                  setProgress(0);
-                }
-              } else {
-                setProgress(0);
-              }
-            } catch {
-              setProgress(0);
-            }
-          } else {
-            setProgress(0);
-          }
+        } catch {
+          setProgress(0);
         }
       };
 
@@ -196,6 +127,7 @@ export default function CourseCard({
     try {
       await deleteUserCourse(course._id);
       dispatch(removeCourseFromUser(course._id));
+      removePendingCourse(course._id);
       toast.success('Курс успешно удален!');
 
       setTimeout(async () => {
@@ -280,9 +212,11 @@ export default function CourseCard({
 
     setLoading(true);
     try {
-      await addUserCourse(course._id);
-
+      const result = await addUserCourse(course._id);
       dispatch(addCourseToUser(course._id));
+      if ((result as { _was500?: boolean })._was500) {
+        addPendingCourse(course._id);
+      }
       toast.success('Курс успешно добавлен!');
 
       const updateUserData = async () => {
@@ -310,6 +244,7 @@ export default function CourseCard({
 
       if (errorStatus === 500 || errorMessage.includes('500')) {
         dispatch(addCourseToUser(course._id));
+        addPendingCourse(course._id);
         toast.success('Курс добавлен!');
       } else {
         toast.error(errorMessage || 'Ошибка добавления курса');

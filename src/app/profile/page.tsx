@@ -4,9 +4,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAppDispatch, useAppSelector, useAppStore } from '@/store/store';
-import { logout, setUser, restoreSession } from '@/store/features/authSlice';
+import { logout, setUser } from '@/store/features/authSlice';
 import { fetchCourses } from '@/store/features/courseSlice';
 import { getMe } from '@/app/services/auth/authApi';
+import {
+  getPendingCourses,
+  prunePendingCourses,
+} from '@/app/services/pendingCourses';
 import CourseCard from '../components/CourseCard';
 import styles from './ProfilePage.module.css';
 
@@ -19,19 +23,19 @@ export default function ProfilePage() {
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    dispatch(restoreSession());
     const timer = setTimeout(() => {
       setIsChecking(false);
     }, 100);
     return () => clearTimeout(timer);
-  }, [dispatch]);
+  }, []);
 
   useEffect(() => {
     if (isChecking) return;
 
-    const token = localStorage.getItem('token');
-    if (!token || !isAuth) {
-      router.push('/');
+    if (!isAuth) {
+      const hasToken =
+        typeof window !== 'undefined' && !!sessionStorage.getItem('token');
+      if (!hasToken) router.push('/');
       return;
     }
 
@@ -43,34 +47,24 @@ export default function ProfilePage() {
         const currentUser = currentState.auth.user;
 
         const userData = await getMe();
+        const serverCourses = userData.selectedCourses || [];
+        const pendingCourses = getPendingCourses();
+        prunePendingCourses(serverCourses);
 
-        if (currentUser && currentUser.selectedCourses) {
-          const localCourses = currentUser.selectedCourses;
-          const serverCourses = userData.selectedCourses || [];
-          const allCoursesSet = new Set([...localCourses, ...serverCourses]);
-          userData.selectedCourses = Array.from(allCoursesSet);
-        }
+        const localCourses = currentUser?.selectedCourses ?? [];
+        const allCoursesSet = new Set([
+          ...localCourses,
+          ...serverCourses,
+          ...pendingCourses,
+        ]);
+        userData.selectedCourses = Array.from(allCoursesSet);
 
         dispatch(setUser(userData));
-
-        if (
-          !userData.selectedCourses ||
-          userData.selectedCourses.length === 0
-        ) {
-          const localCourses = currentUser?.selectedCourses || [];
-          if (localCourses.length > 0) {
-            userData.selectedCourses = localCourses;
-            dispatch(setUser(userData));
-          }
-        }
-      } catch {
-        const currentState = store.getState();
-        const currentUser = currentState.auth.user;
-        if (
-          currentUser &&
-          currentUser.selectedCourses &&
-          currentUser.selectedCourses.length > 0
-        ) {
+      } catch (e) {
+        const status = (e as Error & { status?: number })?.status;
+        if (status === 401 || status === 400) {
+          dispatch(logout());
+          router.push('/');
         }
       }
     };
@@ -86,17 +80,26 @@ export default function ProfilePage() {
         const currentState = store.getState();
         const currentUser = currentState.auth.user;
         const userData = await getMe();
+        const serverCourses = userData.selectedCourses || [];
+        const pendingCourses = getPendingCourses();
+        prunePendingCourses(serverCourses);
 
-        if (currentUser && currentUser.selectedCourses) {
-          const localCourses = currentUser.selectedCourses;
-          const serverCourses = userData.selectedCourses || [];
-
-          const allCoursesSet = new Set([...localCourses, ...serverCourses]);
-          userData.selectedCourses = Array.from(allCoursesSet);
-        }
+        const localCourses = currentUser?.selectedCourses ?? [];
+        const allCoursesSet = new Set([
+          ...localCourses,
+          ...serverCourses,
+          ...pendingCourses,
+        ]);
+        userData.selectedCourses = Array.from(allCoursesSet);
 
         dispatch(setUser(userData));
-      } catch {}
+      } catch (e) {
+        const status = (e as Error & { status?: number })?.status;
+        if (status === 401 || status === 400) {
+          dispatch(logout());
+          router.push('/');
+        }
+      }
     };
 
     const handleFocus = () => {
@@ -109,35 +112,14 @@ export default function ProfilePage() {
       }
     };
 
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'user' && e.newValue) {
-        try {
-          const userData = JSON.parse(e.newValue);
-          const currentState = store.getState();
-          const currentUser = currentState.auth.user;
-
-          if (currentUser && currentUser.selectedCourses) {
-            const localCourses = currentUser.selectedCourses;
-            const storageCourses = userData.selectedCourses || [];
-            const allCoursesSet = new Set([...localCourses, ...storageCourses]);
-            userData.selectedCourses = Array.from(allCoursesSet);
-          }
-
-          dispatch(setUser(userData));
-        } catch {}
-      }
-    };
-
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('storage', handleStorageChange);
 
     return () => {
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('storage', handleStorageChange);
     };
-  }, [isAuth, isChecking, dispatch, store]);
+  }, [isAuth, isChecking, dispatch, store, router]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -152,21 +134,30 @@ export default function ProfilePage() {
         const currentState = store.getState();
         const currentUser = currentState.auth.user;
         const userData = await getMe();
+        const serverCourses = userData.selectedCourses || [];
+        const pendingCourses = getPendingCourses();
+        prunePendingCourses(serverCourses);
 
-        if (currentUser && currentUser.selectedCourses) {
-          const localCourses = currentUser.selectedCourses;
-          const serverCourses = userData.selectedCourses || [];
-
-          const allCoursesSet = new Set([...localCourses, ...serverCourses]);
-          userData.selectedCourses = Array.from(allCoursesSet);
-        }
+        const localCourses = currentUser?.selectedCourses ?? [];
+        const allCoursesSet = new Set([
+          ...localCourses,
+          ...serverCourses,
+          ...pendingCourses,
+        ]);
+        userData.selectedCourses = Array.from(allCoursesSet);
 
         dispatch(setUser(userData));
-      } catch {}
+      } catch (e) {
+        const status = (e as Error & { status?: number })?.status;
+        if (status === 401 || status === 400) {
+          dispatch(logout());
+          router.push('/');
+        }
+      }
     };
 
     updateUser();
-  }, [courses.length, isAuth, isChecking, dispatch, store]);
+  }, [courses.length, isAuth, isChecking, dispatch, store, router]);
 
   const userCourses = useMemo(() => {
     if (!user || !courses || courses.length === 0) {

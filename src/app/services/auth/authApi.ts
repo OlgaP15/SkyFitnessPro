@@ -1,4 +1,5 @@
 import { BASE_URL } from '../constants';
+import { getAuthToken, setAuthToken } from '@/app/services/authToken';
 import { User, LoginResponse, RegisterResponse } from '@/types/shared.Types';
 
 /**
@@ -55,16 +56,21 @@ export const login = async (
   return data;
 };
 
+/** Ошибка с кодом ответа API */
+export type AuthApiError = Error & { status?: number };
+
 /**
  * Получить данные текущего пользователя
  * GET /api/fitness/users/me
  * Требует авторизации
  */
 export const getMe = async (): Promise<User> => {
-  const token = localStorage.getItem('token');
+  const token = getAuthToken();
 
   if (!token) {
-    throw new Error('Токен авторизации не найден');
+    const err = new Error('Токен авторизации не найден') as AuthApiError;
+    err.status = 401;
+    throw err;
   }
 
   const response = await fetch(`${BASE_URL}/api/fitness/users/me`, {
@@ -74,10 +80,17 @@ export const getMe = async (): Promise<User> => {
     },
   });
 
-  const data = await response.json();
+  const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(data.message || 'Ошибка получения данных пользователя');
+    const err = new Error(
+      data?.message || 'Ошибка получения данных пользователя',
+    ) as AuthApiError;
+    err.status = response.status;
+    if (response.status === 401 || response.status === 400) {
+      setAuthToken(null);
+    }
+    throw err;
   }
 
   return data;

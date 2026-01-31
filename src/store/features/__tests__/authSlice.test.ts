@@ -18,6 +18,10 @@ jest.mock('@/app/services/auth/authApi', () => ({
   getMe: jest.fn(),
 }));
 
+jest.mock('@/app/services/authToken', () => ({
+  setAuthToken: jest.fn(),
+}));
+
 describe('authSlice', () => {
   const mockUser: User = {
     email: 'test@example.com',
@@ -28,7 +32,6 @@ describe('authSlice', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    localStorage.clear();
   });
 
   describe('initial state', () => {
@@ -44,7 +47,10 @@ describe('authSlice', () => {
 
   describe('register', () => {
     it('должен обрабатывать pending состояние', () => {
-      const action = register.pending('', { email: 'test@example.com', password: 'password123' });
+      const action = register.pending('', {
+        email: 'test@example.com',
+        password: 'password123',
+      });
       const state = authSliceReducer(undefined, action);
       expect(state.loading).toBe(true);
       expect(state.error).toBeNull();
@@ -58,7 +64,7 @@ describe('authSlice', () => {
       const action = register.fulfilled(
         { user: mockUser, token: mockToken },
         '',
-        { email: 'test@example.com', password: 'password123' }
+        { email: 'test@example.com', password: 'password123' },
       );
       const state = authSliceReducer(undefined, action);
 
@@ -67,8 +73,6 @@ describe('authSlice', () => {
       expect(state.token).toBe(mockToken);
       expect(state.isAuth).toBe(true);
       expect(state.error).toBeNull();
-      expect(localStorage.getItem('token')).toBe(mockToken);
-      expect(localStorage.getItem('user')).toBe(JSON.stringify(mockUser));
     });
 
     it('должен обрабатывать rejected состояние', () => {
@@ -77,7 +81,7 @@ describe('authSlice', () => {
         new Error(errorMessage),
         '',
         { email: 'test@example.com', password: 'password123' },
-        errorMessage
+        errorMessage,
       );
       const state = authSliceReducer(undefined, action);
 
@@ -89,7 +93,10 @@ describe('authSlice', () => {
 
   describe('loginAction', () => {
     it('должен обрабатывать pending состояние', () => {
-      const action = loginAction.pending('', { email: 'test@example.com', password: 'password123' });
+      const action = loginAction.pending('', {
+        email: 'test@example.com',
+        password: 'password123',
+      });
       const state = authSliceReducer(undefined, action);
       expect(state.loading).toBe(true);
       expect(state.error).toBeNull();
@@ -102,7 +109,7 @@ describe('authSlice', () => {
       const action = loginAction.fulfilled(
         { user: mockUser, token: mockToken },
         '',
-        { email: 'test@example.com', password: 'password123' }
+        { email: 'test@example.com', password: 'password123' },
       );
       const state = authSliceReducer(undefined, action);
 
@@ -111,8 +118,6 @@ describe('authSlice', () => {
       expect(state.token).toBe(mockToken);
       expect(state.isAuth).toBe(true);
       expect(state.error).toBeNull();
-      expect(localStorage.getItem('token')).toBe(mockToken);
-      expect(localStorage.getItem('user')).toBe(JSON.stringify(mockUser));
     });
 
     it('должен обрабатывать rejected состояние', () => {
@@ -121,7 +126,7 @@ describe('authSlice', () => {
         new Error(errorMessage),
         '',
         { email: 'test@example.com', password: 'password123' },
-        errorMessage
+        errorMessage,
       );
       const state = authSliceReducer(undefined, action);
 
@@ -132,7 +137,7 @@ describe('authSlice', () => {
   });
 
   describe('logout', () => {
-    it('должен очищать состояние и localStorage', () => {
+    it('должен очищать состояние', () => {
       const initialState = {
         user: mockUser,
         token: mockToken,
@@ -140,8 +145,6 @@ describe('authSlice', () => {
         error: null,
         isAuth: true,
       };
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      localStorage.setItem('token', mockToken);
 
       const state = authSliceReducer(initialState, logout());
 
@@ -149,42 +152,24 @@ describe('authSlice', () => {
       expect(state.token).toBeNull();
       expect(state.isAuth).toBe(false);
       expect(state.error).toBeNull();
-      expect(localStorage.getItem('user')).toBeNull();
-      expect(localStorage.getItem('token')).toBeNull();
     });
   });
 
   describe('restoreSession', () => {
-    it('должен восстанавливать сессию из localStorage', () => {
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      localStorage.setItem('token', mockToken);
-
+    it('не изменяет состояние при вызове без токена', () => {
       const state = authSliceReducer(undefined, restoreSession());
 
-      expect(state.user).toEqual(mockUser);
+      expect(state.user).toBeNull();
+      expect(state.token).toBeNull();
+      expect(state.isAuth).toBe(false);
+    });
+
+    it('восстанавливает сессию по токену из sessionStorage', () => {
+      const state = authSliceReducer(undefined, restoreSession(mockToken));
+
       expect(state.token).toBe(mockToken);
       expect(state.isAuth).toBe(true);
-    });
-
-    it('должен обрабатывать невалидные данные в localStorage', () => {
-      localStorage.setItem('user', 'invalid-json');
-      localStorage.setItem('token', mockToken);
-
-      const state = authSliceReducer(undefined, restoreSession());
-
       expect(state.user).toBeNull();
-      expect(state.token).toBeNull();
-      expect(state.isAuth).toBe(false);
-      expect(localStorage.getItem('user')).toBeNull();
-      expect(localStorage.getItem('token')).toBeNull();
-    });
-
-    it('должен игнорировать восстановление если нет данных в localStorage', () => {
-      const state = authSliceReducer(undefined, restoreSession());
-
-      expect(state.user).toBeNull();
-      expect(state.token).toBeNull();
-      expect(state.isAuth).toBe(false);
     });
   });
 
@@ -214,7 +199,6 @@ describe('authSlice', () => {
       const state = authSliceReducer(undefined, setUser(newUser));
 
       expect(state.user).toEqual(newUser);
-      expect(localStorage.getItem('user')).toBe(JSON.stringify(newUser));
     });
 
     it('должен объединять локальные и серверные selectedCourses', () => {
@@ -261,7 +245,6 @@ describe('authSlice', () => {
       expect(state.user?.selectedCourses).toContain('course1');
       expect(state.user?.selectedCourses).toContain('course2');
       expect(state.user?.selectedCourses).toHaveLength(2);
-      expect(localStorage.getItem('user')).toBe(JSON.stringify(state.user));
     });
 
     it('должен создавать selectedCourses если его нет', () => {
@@ -327,11 +310,13 @@ describe('authSlice', () => {
         isAuth: true,
       };
 
-      const state = authSliceReducer(initialState, removeCourseFromUser('course2'));
+      const state = authSliceReducer(
+        initialState,
+        removeCourseFromUser('course2'),
+      );
 
       expect(state.user?.selectedCourses).toEqual(['course1', 'course3']);
       expect(state.user?.selectedCourses).not.toContain('course2');
-      expect(localStorage.getItem('user')).toBe(JSON.stringify(state.user));
     });
 
     it('не должен делать ничего если курс не найден', () => {
@@ -346,7 +331,10 @@ describe('authSlice', () => {
         isAuth: true,
       };
 
-      const state = authSliceReducer(initialState, removeCourseFromUser('course3'));
+      const state = authSliceReducer(
+        initialState,
+        removeCourseFromUser('course3'),
+      );
 
       expect(state.user?.selectedCourses).toEqual(['course1', 'course2']);
     });
@@ -360,7 +348,10 @@ describe('authSlice', () => {
         isAuth: false,
       };
 
-      const state = authSliceReducer(initialState, removeCourseFromUser('course1'));
+      const state = authSliceReducer(
+        initialState,
+        removeCourseFromUser('course1'),
+      );
 
       expect(state.user).toBeNull();
     });

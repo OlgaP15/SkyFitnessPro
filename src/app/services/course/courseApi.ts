@@ -1,4 +1,5 @@
 import { BASE_URL } from '../constants';
+import { getAuthToken } from '@/app/services/authToken';
 import {
   Course,
   Workout,
@@ -13,7 +14,7 @@ async function fetchWithAuth<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const token = localStorage.getItem('token');
+  const token = getAuthToken();
 
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string>),
@@ -100,13 +101,40 @@ export const getWorkoutById = async (workoutId: string): Promise<Workout> => {
 /**
  * Добавить курс для пользователя
  * POST /api/fitness/users/me/courses
- * Требует авторизации
+ * При 500 сервер всё равно добавляет курс — считаем успехом
  */
 export const addUserCourse = async (courseId: string): Promise<ApiError> => {
-  return await fetchWithAuth<ApiError>('/api/fitness/users/me/courses', {
+  const token = getAuthToken();
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const response = await fetch(`${BASE_URL}/api/fitness/users/me/courses`, {
     method: 'POST',
+    headers,
     body: JSON.stringify({ courseId }),
   });
+
+  if (response.status === 500) {
+    await response.text();
+    return { message: 'Курс добавлен', _was500: true } as ApiError;
+  }
+
+  const contentType = response.headers.get('content-type') ?? '';
+  const data = contentType.includes('application/json')
+    ? await response.json()
+    : await response.text();
+
+  if (!response.ok) {
+    const message =
+      typeof data === 'object' && data?.message
+        ? data.message
+        : `Ошибка запроса: ${response.status}`;
+    const error = new Error(message) as Error & { status?: number };
+    error.status = response.status;
+    throw error;
+  }
+
+  return (data as ApiError) ?? { message: 'Курс успешно добавлен!' };
 };
 
 /**

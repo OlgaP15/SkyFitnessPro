@@ -8,6 +8,10 @@ import { useAppDispatch, useAppSelector } from '../../../store/store';
 import { useModal } from '@/context/modalContext';
 import { getMe } from '@/app/services/auth/authApi';
 import { setUser, logout } from '@/store/features/authSlice';
+import {
+  getPendingCourses,
+  prunePendingCourses,
+} from '@/app/services/pendingCourses';
 
 export default function AuthButtons() {
   const dispatch = useAppDispatch();
@@ -21,16 +25,23 @@ export default function AuthButtons() {
   const userEmail = useMemo(() => user?.email || null, [user?.email]);
 
   useEffect(() => {
-    if (isAuth && !userEmail) {
-      getMe()
-        .then((userData) => {
-          if (userData && userData.email) {
-            dispatch(setUser(userData));
-          }
-        })
-        .catch(() => {
-        });
-    }
+    if (!isAuth || userEmail) return;
+
+    getMe()
+      .then((userData) => {
+        if (userData?.email) {
+          const serverCourses = userData.selectedCourses || [];
+          const pendingCourses = getPendingCourses();
+          prunePendingCourses(serverCourses);
+          userData.selectedCourses = Array.from(
+            new Set([...serverCourses, ...pendingCourses]),
+          );
+          dispatch(setUser(userData));
+        }
+      })
+      .catch((e: Error & { status?: number }) => {
+        if (e?.status === 401 || e?.status === 400) dispatch(logout());
+      });
   }, [isAuth, userEmail, dispatch]);
 
   useEffect(() => {
@@ -58,7 +69,7 @@ export default function AuthButtons() {
     if (!isAuth || !user) {
       return 'Профиль';
     }
-    
+
     const email = user.email;
     if (email && typeof email === 'string' && email.trim() !== '') {
       const namePart = email.split('@')[0];
@@ -66,8 +77,8 @@ export default function AuthButtons() {
         return namePart.charAt(0).toUpperCase() + namePart.slice(1);
       }
     }
-    
-    return 'Профиль'; //спросить как поставить
+
+    return 'Профиль';
   };
 
   const handleLogout = () => {
@@ -97,7 +108,7 @@ export default function AuthButtons() {
             height={50}
             className={styles.profileIcon}
           />
-          <span>{displayName}</span>
+          <span className={styles.modalName}>{displayName}</span>
           <Image
             src="/images/galka.svg"
             alt="Dropdown"
@@ -117,10 +128,7 @@ export default function AuthButtons() {
               >
                 Мой профиль
               </button>
-              <button
-                onClick={handleLogout}
-                className={styles.logoutButton}
-              >
+              <button onClick={handleLogout} className={styles.logoutButton}>
                 Выйти
               </button>
             </div>
@@ -132,10 +140,7 @@ export default function AuthButtons() {
 
   return (
     <div className={styles.authButtons}>
-      <button 
-        onClick={() => openLogin(true)}
-        className={styles.loginButton}
-      >
+      <button onClick={() => openLogin(true)} className={styles.loginButton}>
         Вход
       </button>
     </div>

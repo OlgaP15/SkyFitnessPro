@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { registerUser, login, getMe } from '@/app/services/auth/authApi';
+import { setAuthToken } from '@/app/services/authToken';
+import { clearPendingCourses } from '@/app/services/pendingCourses';
 import { User, LoginResponse } from '@/types/shared.Types';
 
 interface AuthState {
@@ -22,29 +24,26 @@ export const register = createAsyncThunk<
   { user: User; token: string },
   { email: string; password: string },
   { rejectValue: string }
->(
-  'auth/register',
-  async ({ email, password }, { rejectWithValue }) => {
-    try {
-      await registerUser(email, password);
-      const loginResponse: LoginResponse = await login(email, password);
-      
-      localStorage.setItem('token', loginResponse.token);
-      
-      const userData = await getMe();
-      
-      localStorage.setItem('user', JSON.stringify(userData));
-
-      return {
-        user: userData,
-        token: loginResponse.token,
-      };
-    } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error('Ошибка регистрации');
-      return rejectWithValue(err.message || 'Ошибка регистрации');
+>('auth/register', async ({ email, password }, { rejectWithValue }) => {
+  try {
+    await registerUser(email, password);
+    const loginResponse: LoginResponse = await login(email, password);
+    setAuthToken(loginResponse.token);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('token', loginResponse.token);
     }
-  },
-);
+    const userData = await getMe();
+
+    return {
+      user: userData,
+      token: loginResponse.token,
+    };
+  } catch (error: unknown) {
+    const err =
+      error instanceof Error ? error : new Error('Ошибка регистрации');
+    return rejectWithValue(err.message || 'Ошибка регистрации');
+  }
+});
 
 export const loginAction = createAsyncThunk<
   { user: User; token: string },
@@ -53,12 +52,11 @@ export const loginAction = createAsyncThunk<
 >('auth/login', async ({ email, password }, { rejectWithValue }) => {
   try {
     const loginResponse: LoginResponse = await login(email, password);
-    
-    localStorage.setItem('token', loginResponse.token);
-    
+    setAuthToken(loginResponse.token);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('token', loginResponse.token);
+    }
     const userData = await getMe();
-    
-    localStorage.setItem('user', JSON.stringify(userData));
 
     return {
       user: userData,
@@ -75,26 +73,18 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     logout: (state) => {
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');
+      setAuthToken(null);
+      clearPendingCourses();
+      if (typeof window !== 'undefined') sessionStorage.removeItem('token');
       state.user = null;
       state.token = null;
       state.isAuth = false;
       state.error = null;
     },
-    restoreSession: (state) => {
-      const savedUser = localStorage.getItem('user');
-      const savedToken = localStorage.getItem('token');
-      if (savedUser && savedToken) {
-        try {
-          const parsed: User = JSON.parse(savedUser);
-          state.user = parsed;
-          state.token = savedToken;
-          state.isAuth = true;
-        } catch {
-          localStorage.removeItem('user');
-          localStorage.removeItem('token');
-        }
+    restoreSession: (state, action: PayloadAction<string | undefined>) => {
+      if (action.payload) {
+        state.token = action.payload;
+        state.isAuth = true;
       }
     },
     clearError: (state) => {
@@ -102,32 +92,29 @@ const authSlice = createSlice({
     },
     setUser: (state, action: PayloadAction<User>) => {
       const newUser = { ...action.payload };
-      if (state.user && state.user.selectedCourses && state.user.selectedCourses.length > 0) {
-        const localCourses = state.user.selectedCourses;
-        const serverCourses = newUser.selectedCourses || [];
-        const allCoursesSet = new Set([...localCourses, ...serverCourses]);
-        newUser.selectedCourses = Array.from(allCoursesSet);
-      }
+      const serverCourses = newUser.selectedCourses || [];
+      const localCourses = state.user?.selectedCourses ?? [];
+      newUser.selectedCourses = Array.from(
+        new Set([...localCourses, ...serverCourses]),
+      );
       state.user = newUser;
-      localStorage.setItem('user', JSON.stringify(newUser));
     },
     addCourseToUser: (state, action: PayloadAction<string>) => {
       if (state.user) {
-        if (!state.user.selectedCourses) {
-          state.user.selectedCourses = [];
-        }
+        if (!state.user.selectedCourses) state.user.selectedCourses = [];
         if (!state.user.selectedCourses.includes(action.payload)) {
-          state.user.selectedCourses = [...state.user.selectedCourses, action.payload];
-          localStorage.setItem('user', JSON.stringify(state.user));
+          state.user.selectedCourses = [
+            ...state.user.selectedCourses,
+            action.payload,
+          ];
         }
       }
     },
     removeCourseFromUser: (state, action: PayloadAction<string>) => {
-      if (state.user && state.user.selectedCourses) {
+      if (state.user?.selectedCourses) {
         state.user.selectedCourses = state.user.selectedCourses.filter(
-          (id) => id !== action.payload
+          (id) => id !== action.payload,
         );
-        localStorage.setItem('user', JSON.stringify(state.user));
       }
     },
   },
@@ -174,6 +161,12 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, restoreSession, clearError, setUser, addCourseToUser, removeCourseFromUser } =
-  authSlice.actions;
+export const {
+  logout,
+  restoreSession,
+  clearError,
+  setUser,
+  addCourseToUser,
+  removeCourseFromUser,
+} = authSlice.actions;
 export const authSliceReducer = authSlice.reducer;

@@ -159,4 +159,8 @@
   .logoutButton {
     width: 100%;
   }
+
+  .modalName {
+    display: none;
+  }
 }

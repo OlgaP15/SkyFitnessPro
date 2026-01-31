@@ -69,4 +69,5 @@ export interface WorkoutProgressResponse {
 
 export interface ApiError {
   message: string;
+  _was500?: boolean;
 }

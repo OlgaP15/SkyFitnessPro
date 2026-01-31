@@ -5,15 +5,25 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'react-toastify';
 import styles from './WorkoutPage.module.css';
-import { getWorkoutById, getWorkoutProgress, saveWorkoutProgress, getCourseById, getCourseProgress } from '@/app/services/course/courseApi';
-import { Workout, Exercise, ProgressResponse, Course } from '@/types/shared.Types';
+import {
+  getWorkoutById,
+  getWorkoutProgress,
+  saveWorkoutProgress,
+  getCourseById,
+} from '@/app/services/course/courseApi';
+import {
+  Workout,
+  Exercise,
+  ProgressResponse,
+  Course,
+} from '@/types/shared.Types';
 import ProgressModal from '@/app/components/ProgressModal/ProgressModal';
 import SuccessModal from '@/app/components/SuccessModal/SuccessModal';
 
 if (typeof window !== 'undefined') {
   const originalError = console.error;
   const originalWarn = console.warn;
-  
+
   console.error = (...args: unknown[]) => {
     const message = String(args.join(' '));
     if (
@@ -27,7 +37,7 @@ if (typeof window !== 'undefined') {
     }
     originalError.apply(console, args);
   };
-  
+
   console.warn = (...args: unknown[]) => {
     const message = String(args.join(' '));
     if (
@@ -38,19 +48,23 @@ if (typeof window !== 'undefined') {
     }
     originalWarn.apply(console, args);
   };
-  
-  window.addEventListener('error', (event) => {
-    const message = event.message || '';
-    if (
-      message.includes('googleads.g.doubleclick.net') ||
-      message.includes('CORS policy') ||
-      message.includes('Access to XMLHttpRequest')
-    ) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-  }, true);
-  
+
+  window.addEventListener(
+    'error',
+    (event) => {
+      const message = event.message || '';
+      if (
+        message.includes('googleads.g.doubleclick.net') ||
+        message.includes('CORS policy') ||
+        message.includes('Access to XMLHttpRequest')
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    },
+    true,
+  );
+
   window.addEventListener('unhandledrejection', (event) => {
     const message = String(event.reason || '');
     if (
@@ -85,26 +99,13 @@ export default function WorkoutPage() {
         ]);
         setWorkout(workoutData);
         setCourse(courseData);
-        
+
         const fetchProgress = async (attempt = 1) => {
           try {
-            const storageKey = `progress_${courseId}_${workoutId}`;
-            const savedProgress = localStorage.getItem(storageKey);
-            
             const progressData = await getWorkoutProgress(courseId, workoutId);
-            if (progressData && progressData.progressData && progressData.progressData.length > 0) {
+            if (progressData?.progressData?.length > 0) {
               setProgress(progressData);
               setHasProgress(true);
-              localStorage.setItem(storageKey, JSON.stringify(progressData));
-            } else if (savedProgress) {
-              try {
-                const parsedProgress = JSON.parse(savedProgress) as ProgressResponse;
-                setProgress(parsedProgress);
-                setHasProgress(true);
-              } catch {
-                setProgress(null);
-                setHasProgress(false);
-              }
             } else {
               setProgress(null);
               setHasProgress(false);
@@ -112,31 +113,21 @@ export default function WorkoutPage() {
           } catch (error) {
             const errorStatus = (error as Error & { status?: number })?.status;
             if (errorStatus === 500 && attempt < 3) {
-              await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+              await new Promise((resolve) =>
+                setTimeout(resolve, 1000 * attempt),
+              );
               fetchProgress(attempt + 1);
             } else {
-              const storageKey = `progress_${courseId}_${workoutId}`;
-              const savedProgress = localStorage.getItem(storageKey);
-              if (savedProgress) {
-                try {
-                  const parsedProgress = JSON.parse(savedProgress) as ProgressResponse;
-                  setProgress(parsedProgress);
-                  setHasProgress(true);
-                } catch {
-                  setProgress(null);
-                  setHasProgress(false);
-                }
-              } else {
-                setProgress(null);
-                setHasProgress(false);
-              }
+              setProgress(null);
+              setHasProgress(false);
             }
           }
         };
-        
+
         fetchProgress();
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Ошибка загрузки данных';
+        const errorMessage =
+          error instanceof Error ? error.message : 'Ошибка загрузки данных';
         toast.error(errorMessage);
       } finally {
         setLoading(false);
@@ -150,12 +141,12 @@ export default function WorkoutPage() {
 
   const handleSaveProgress = async (progressData: number[]) => {
     if (!workout) return;
-    
+
     const isWorkoutCompleted = workout.exercises.every((exercise, index) => {
       const completed = progressData[index] || 0;
       return completed >= exercise.quantity;
     });
-    
+
     const localProgress: ProgressResponse = {
       workoutId,
       workoutCompleted: isWorkoutCompleted,
@@ -163,83 +154,42 @@ export default function WorkoutPage() {
     };
     setProgress(localProgress);
     setHasProgress(true);
-    
-    const storageKey = `progress_${courseId}_${workoutId}`;
-    localStorage.setItem(storageKey, JSON.stringify(localProgress));
-    
-    const courseProgressKey = `course_progress_${courseId}`;
-    try {
-      const courseProgressData = await getCourseProgress(courseId).catch(() => null);
-      if (courseProgressData) {
-        const updatedWorkoutsProgress = courseProgressData.workoutsProgress || [];
-        const workoutIndex = updatedWorkoutsProgress.findIndex((wp: { workoutId: string }) => wp.workoutId === workoutId);
-        if (workoutIndex >= 0) {
-          updatedWorkoutsProgress[workoutIndex].workoutCompleted = isWorkoutCompleted;
-          updatedWorkoutsProgress[workoutIndex].progressData = progressData;
-        } else {
-          updatedWorkoutsProgress.push({
-            workoutId,
-            workoutCompleted: isWorkoutCompleted,
-            progressData: progressData,
-          });
-        }
-        courseProgressData.workoutsProgress = updatedWorkoutsProgress;
-        localStorage.setItem(courseProgressKey, JSON.stringify(courseProgressData));
-      } else {
-        const newCourseProgress: ProgressResponse = {
-          courseId,
-          courseCompleted: false,
-          workoutsProgress: [{
-            workoutId,
-            workoutCompleted: isWorkoutCompleted,
-            progressData: progressData,
-          }],
-          progressData: [],
-        };
-        localStorage.setItem(courseProgressKey, JSON.stringify(newCourseProgress));
-      }
-    } catch {
-    }
-    
+
     try {
       await saveWorkoutProgress(courseId, workoutId, progressData);
-      
-      const storageKey = `progress_${courseId}_${workoutId}`;
+
       const fetchUpdatedProgress = async (attempt = 1) => {
         try {
-          await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
+          await new Promise((resolve) => setTimeout(resolve, 1500 * attempt));
           const updatedProgress = await getWorkoutProgress(courseId, workoutId);
-          if (updatedProgress && updatedProgress.progressData && updatedProgress.progressData.length > 0) {
+          if (updatedProgress?.progressData?.length > 0) {
             setProgress(updatedProgress);
             setHasProgress(true);
-            localStorage.setItem(storageKey, JSON.stringify(updatedProgress));
-          } else if (updatedProgress) {
+          } else {
             setProgress(localProgress);
             setHasProgress(true);
-            localStorage.setItem(storageKey, JSON.stringify(localProgress));
           }
-        } catch (progressError) {
+        } catch {
           if (attempt < 5) {
             fetchUpdatedProgress(attempt + 1);
           } else {
-            console.warn('Не удалось получить обновленный прогресс после нескольких попыток, используем локальный прогресс:', progressError);
             setProgress(localProgress);
             setHasProgress(true);
-            localStorage.setItem(storageKey, JSON.stringify(localProgress));
           }
         }
       };
-      
+
       fetchUpdatedProgress();
-      
+
       window.dispatchEvent(new CustomEvent('workoutProgressUpdated'));
-      
+
       setIsModalOpen(false);
       setIsSuccessModalOpen(true);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Ошибка сохранения прогресса';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Ошибка сохранения прогресса';
       const errorStatus = (error as Error & { status?: number })?.status;
-      
+
       if (errorStatus === 500) {
         setIsModalOpen(false);
         setIsSuccessModalOpen(true);
@@ -252,13 +202,15 @@ export default function WorkoutPage() {
   const getExerciseProgress = (exerciseIndex: number): number => {
     if (!progress || !progress.progressData || !workout) return 0;
     if (exerciseIndex >= progress.progressData.length) return 0;
-    
+
     const completed = progress.progressData[exerciseIndex];
     const total = workout.exercises[exerciseIndex]?.quantity || 1;
     return total > 0 ? Math.round((completed / total) * 100) : 0;
   };
 
-  const distributeExercisesIntoColumns = (exercises: Exercise[]): Exercise[][] => {
+  const distributeExercisesIntoColumns = (
+    exercises: Exercise[],
+  ): Exercise[][] => {
     const columns: Exercise[][] = [[], [], []];
     exercises.forEach((exercise, index) => {
       columns[index % 3].push(exercise);
@@ -289,8 +241,20 @@ export default function WorkoutPage() {
       {course && (
         <>
           <Link href="/profile" className={styles.backLink}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M10 12L6 8L10 4" stroke="#2196F3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M10 12L6 8L10 4"
+                stroke="#2196F3"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
             <span>Вернуться к моим курсам</span>
           </Link>
@@ -310,9 +274,15 @@ export default function WorkoutPage() {
           ) : (
             <div className={styles.videoPlaceholder}>
               <div className={styles.playButton}>
-                <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="40" cy="40" r="40" fill="rgba(0, 0, 0, 0.6)"/>
-                  <path d="M32 25L32 55L55 40L32 25Z" fill="white"/>
+                <svg
+                  width="80"
+                  height="80"
+                  viewBox="0 0 80 80"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle cx="40" cy="40" r="40" fill="rgba(0, 0, 0, 0.6)" />
+                  <path d="M32 25L32 55L55 40L32 25Z" fill="white" />
                 </svg>
               </div>
             </div>
@@ -321,15 +291,13 @@ export default function WorkoutPage() {
       </div>
 
       <div className={styles.exercisesSection}>
-        <h2 className={styles.sectionTitle}>
-          Упражнения {workout.name}
-        </h2>
+        <h2 className={styles.sectionTitle}>Упражнения {workout.name}</h2>
         <div className={styles.exercisesGrid}>
           {columns.map((column, columnIndex) => (
             <div key={columnIndex} className={styles.exerciseColumn}>
               {column.map((exercise) => {
                 const globalIndex = workout.exercises.findIndex(
-                  (e) => e._id === exercise._id
+                  (e) => e._id === exercise._id,
                 );
                 const progressPercent = getExerciseProgress(globalIndex);
                 return (
@@ -340,8 +308,8 @@ export default function WorkoutPage() {
                         {progressPercent}%
                       </div>
                       <div className={styles.progressBar}>
-                        <div 
-                          className={styles.progressBarFill} 
+                        <div
+                          className={styles.progressBarFill}
                           style={{ width: `${progressPercent}%` }}
                         />
                       </div>
@@ -356,7 +324,10 @@ export default function WorkoutPage() {
           className={styles.progressButton}
           onClick={() => setIsModalOpen(true)}
         >
-          {hasProgress || (progress && progress.progressData && progress.progressData.length > 0)
+          {hasProgress ||
+          (progress &&
+            progress.progressData &&
+            progress.progressData.length > 0)
             ? 'Обновить свой прогресс'
             : 'Заполнить свой прогресс'}
         </button>
