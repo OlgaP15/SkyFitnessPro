@@ -22,14 +22,14 @@ export default function AuthButtons() {
   const modalRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const userEmail = useMemo(() => user?.email || null, [user?.email]);
+  const userEmail = useMemo(() => user?.user.email || null, [user?.user.email]);
 
   useEffect(() => {
     if (!isAuth || userEmail) return;
 
     getMe()
       .then((userData) => {
-        if (userData?.email) {
+        if (userData?.user.email) {
           const serverCourses = userData.selectedCourses || [];
           const pendingCourses = getPendingCourses();
           prunePendingCourses(serverCourses);
@@ -70,7 +70,7 @@ export default function AuthButtons() {
       return 'Профиль';
     }
 
-    const email = user.email;
+    const email = user.user.email;
     if (email && typeof email === 'string' && email.trim() !== '') {
       const namePart = email.split('@')[0];
       if (namePart && namePart.trim() !== '') {
@@ -121,7 +121,7 @@ export default function AuthButtons() {
           <div ref={modalRef} className={styles.modal}>
             <div className={styles.modalContent}>
               <div className={styles.userName}>{displayName}</div>
-              <div className={styles.userEmail}>{user?.email || ''}</div>
+              <div className={styles.userEmail}>{user?.user.email || ''}</div>
               <button
                 onClick={handleProfileClick}
                 className={styles.profileModalButton}

@@ -1,7 +1,9 @@
 export interface User {
+  user: {
   email: string;
+  };
   selectedCourses: string[];
-}
+  }
 
 export interface LoginResponse {
   token: string;

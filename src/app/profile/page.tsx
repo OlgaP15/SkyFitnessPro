@@ -189,8 +189,8 @@ export default function ProfilePage() {
   }
 
   const getUserName = (): string => {
-    if (!user.email) return '';
-    const name = user.email.split('@')[0];
+    if (!user.user.email) return '';
+    const name = user.user.email.split('@')[0];
     return name.charAt(0).toUpperCase() + name.slice(1);
   };
 
@@ -216,7 +216,7 @@ export default function ProfilePage() {
         <div className={styles.profileInfo}>
           <div className={styles.userDetails}>
             <p className={styles.userName}>{getUserName()}</p>
-            <p className={styles.userLogin}>Логин: {user.email}</p>
+            <p className={styles.userLogin}>Логин: {user.user.email}</p>
             <button onClick={handleLogout} className={styles.logoutButton}>
               Выйти
             </button>
