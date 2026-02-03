@@ -1,0 +1,321 @@
+'use client';
+
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { useAppDispatch, useAppSelector, useAppStore } from '@/store/store';
+import { logout, setUser } from '@/store/features/authSlice';
+import { fetchCourses } from '@/store/features/courseSlice';
+import { getMe } from '@/app/services/auth/authApi';
+import {
+  getPendingCourses,
+  prunePendingCourses,
+} from '@/app/services/pendingCourses';
+import CourseCard from '../components/CourseCard';
+import styles from './ProfilePage.module.css';
+
+export default function ProfilePage() {
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const store = useAppStore();
+  const { user, isAuth } = useAppSelector((state) => state.auth);
+  const { courses } = useAppSelector((state) => state.course);
+  const [isChecking, setIsChecking] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsChecking(false);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (isChecking) return;
+
+    if (!isAuth) {
+      const hasToken =
+        typeof window !== 'undefined' && !!sessionStorage.getItem('token');
+      if (!hasToken) router.push('/');
+      return;
+    }
+
+    const loadData = async () => {
+      try {
+        await dispatch(fetchCourses());
+
+        const currentState = store.getState();
+        const currentUser = currentState.auth.user;
+
+        const userData = await getMe();
+        const serverCourses = userData.selectedCourses || [];
+        const pendingCourses = getPendingCourses();
+        prunePendingCourses(serverCourses);
+
+        const localCourses = currentUser?.selectedCourses ?? [];
+        const allCoursesSet = new Set([
+          ...localCourses,
+          ...serverCourses,
+          ...pendingCourses,
+        ]);
+        userData.selectedCourses = Array.from(allCoursesSet);
+
+        dispatch(setUser(userData));
+      } catch (e) {
+        const status = (e as Error & { status?: number })?.status;
+        if (status === 401 || status === 400) {
+          dispatch(logout());
+          router.push('/');
+        }
+      }
+    };
+
+    loadData();
+  }, [isAuth, isChecking, router, dispatch, store]);
+
+  useEffect(() => {
+    if (!isAuth || isChecking) return;
+
+    const updateUserData = async () => {
+      try {
+        const currentState = store.getState();
+        const currentUser = currentState.auth.user;
+        const userData = await getMe();
+        const serverCourses = userData.selectedCourses || [];
+        const pendingCourses = getPendingCourses();
+        prunePendingCourses(serverCourses);
+
+        const localCourses = currentUser?.selectedCourses ?? [];
+        const allCoursesSet = new Set([
+          ...localCourses,
+          ...serverCourses,
+          ...pendingCourses,
+        ]);
+        userData.selectedCourses = Array.from(allCoursesSet);
+
+        dispatch(setUser(userData));
+      } catch (e) {
+        const status = (e as Error & { status?: number })?.status;
+        if (status === 401 || status === 400) {
+          dispatch(logout());
+          router.push('/');
+        }
+      }
+    };
+
+    const handleFocus = () => {
+      updateUserData();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        updateUserData();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isAuth, isChecking, dispatch, store, router]);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    router.push('/');
+  };
+
+  useEffect(() => {
+    if (!isAuth || isChecking) return;
+
+    const updateUser = async () => {
+      try {
+        const currentState = store.getState();
+        const currentUser = currentState.auth.user;
+        const userData = await getMe();
+        const serverCourses = userData.selectedCourses || [];
+        const pendingCourses = getPendingCourses();
+        prunePendingCourses(serverCourses);
+
+        const localCourses = currentUser?.selectedCourses ?? [];
+        const allCoursesSet = new Set([
+          ...localCourses,
+          ...serverCourses,
+          ...pendingCourses,
+        ]);
+        userData.selectedCourses = Array.from(allCoursesSet);
+
+        dispatch(setUser(userData));
+      } catch (e) {
+        const status = (e as Error & { status?: number })?.status;
+        if (status === 401 || status === 400) {
+          dispatch(logout());
+          router.push('/');
+        }
+      }
+    };
+
+    updateUser();
+  }, [courses.length, isAuth, isChecking, dispatch, store, router]);
+
+  const userCourses = useMemo(() => {
+    if (!user || !courses || courses.length === 0) {
+      return [];
+    }
+
+    const selectedCoursesIds = user.selectedCourses || [];
+    if (selectedCoursesIds.length === 0) {
+      return [];
+    }
+
+    const filtered = courses.filter((course) =>
+      selectedCoursesIds.includes(course._id),
+    );
+
+    return filtered;
+  }, [user, courses]);
+
+  if (isChecking) {
+    return (
+      <div className={styles.profilePage}>
+        <div>Загрузка...</div>
+      </div>
+    );
+  }
+
+  if (!isAuth || !user) {
+    return null;
+  }
+
+  const getUserName = (): string => {
+    if (!user.user.email) return '';
+    const name = user.user.email.split('@')[0];
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  };
+
+  return (
+    <div className={styles.profilePage}>
+      <h1 className={styles.profileTitle}>Профиль</h1>
+
+      <div className={styles.profileMain}>
+        <div className={styles.profileAvatar}>
+          <Image
+            src="/images/profil.svg"
+            alt="Аватар"
+            width={197}
+            height={197}
+            className={styles.avatarImage}
+            loading="eager"
+            priority
+          />
+        </div>
+
+        <div className={styles.profileDivider}></div>
+
+        <div className={styles.profileInfo}>
+          <div className={styles.userDetails}>
+            <p className={styles.userName}>{getUserName()}</p>
+            <p className={styles.userLogin}>Логин: {user.user.email}</p>
+            <button onClick={handleLogout} className={styles.logoutButton}>
+              Выйти
+            </button>
+          </div>
+          <div className={styles.coursesCount}>{userCourses.length}</div>
+        </div>
+      </div>
+
+      <div className={styles.coursesSection}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '20px',
+          }}
+        >
+          <h2 className={styles.sectionTitle}>Мои курсы</h2>
+        </div>
+        {userCourses.length > 0 ? (
+          <div
+            key={user.selectedCourses?.join(',') || 'empty'}
+            className={styles.coursesGrid}
+          >
+            {userCourses.map((course) => (
+              <CourseCard
+                key={course._id}
+                course={course}
+                showMinusIcon={true}
+                isProfileCard={true}
+              />
+            ))}
+          </div>
+        ) : (
+          <div>
+            <p className={styles.emptyMessage}>
+              У вас пока нет приобретенных курсов
+            </p>
+            <div
+              style={{
+                marginTop: '20px',
+                padding: '15px',
+                backgroundColor: '#f3f4f6',
+                borderRadius: '8px',
+                fontSize: '14px',
+                color: '#374151',
+              }}
+            >
+              <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                Отладочная информация:
+              </p>
+              <p>
+                <strong>Пользователь:</strong>{' '}
+                {user ? 'Загружен' : 'Не загружен'}
+              </p>
+              <p>
+                <strong>Курсов в selectedCourses:</strong>{' '}
+                {user?.selectedCourses?.length || 0}
+              </p>
+              <p>
+                <strong>Загружено курсов из API:</strong> {courses.length}
+              </p>
+              {user?.selectedCourses && user.selectedCourses.length > 0 && (
+                <p style={{ marginTop: '10px', wordBreak: 'break-all' }}>
+                  <strong>IDs курсов пользователя:</strong>{' '}
+                  {user.selectedCourses.join(', ')}
+                </p>
+              )}
+              {courses.length > 0 && (
+                <p style={{ marginTop: '10px', wordBreak: 'break-all' }}>
+                  <strong>IDs всех курсов:</strong>{' '}
+                  {courses.map((c) => c._id).join(', ')}
+                </p>
+              )}
+              {user?.selectedCourses && courses.length > 0 && (
+                <div style={{ marginTop: '10px' }}>
+                  <p>
+                    <strong>Соответствия:</strong>
+                  </p>
+                  {user.selectedCourses.map((courseId) => {
+                    const course = courses.find((c) => c._id === courseId);
+                    return (
+                      <p
+                        key={courseId}
+                        style={{ fontSize: '12px', margin: '5px 0' }}
+                      >
+                        ID: {courseId} -{' '}
+                        {course
+                          ? `✓ Найден: ${course.nameRU}`
+                          : '✗ Не найден в списке курсов'}
+                      </p>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

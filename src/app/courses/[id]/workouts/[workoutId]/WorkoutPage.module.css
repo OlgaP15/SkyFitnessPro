@@ -1,0 +1,204 @@
+.workoutPage {
+  max-width: 1440px;
+  width: 100%;
+  max-height: 1559px;
+  padding: 60px 140px 260px;
+  opacity: 1;
+  transform: rotate(0deg);
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+  color: #666;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #2196F3;
+  text-decoration: none;
+  margin-bottom: 20px;
+  transition: opacity 0.2s;
+}
+
+.backLink:hover {
+  opacity: 0.8;
+}
+
+.backLink span {
+  color: #2196F3;
+}
+
+.courseTitle {
+  font-family: 'Roboto', sans-serif;
+  font-size: 60px;
+  font-weight: 500;
+  color: #000;
+  margin-bottom: 40px;
+  line-height: 110%;
+}
+
+.videoContainer {
+  margin-bottom: 40px;
+}
+
+.videoWrapper {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  border-radius: 30px;
+  overflow: hidden;
+  background: #000;
+}
+
+.video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 30px;
+}
+
+.videoPlaceholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a1a;
+  border-radius: 30px;
+}
+
+.playButton {
+  cursor: pointer;
+  transition: transform 0.2s;
+  z-index: 1;
+}
+
+.playButton:hover {
+  transform: scale(1.1);
+}
+
+.exercisesSection {
+  background: #fff;
+  border-radius: 30px;
+  padding: 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.sectionTitle {
+  font-family: 'Roboto', sans-serif;
+  font-size: 24px;
+  font-weight: 500;
+  color: #000;
+  margin-bottom: 30px;
+}
+
+.exercisesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 60px;
+  margin-bottom: 40px;
+  justify-items: start;
+  align-items: center;
+}
+
+.exerciseColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.exerciseItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.exerciseName {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #000;
+  line-height: 1.4;
+}
+
+.exerciseProgress {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #000;
+}
+
+.exerciseProgressContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background-color: #E0E0E0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  background-color: #2196F3;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progressButton {
+  width: 100%;
+  max-width: 437px;
+  height: 52px;
+  border-radius: 46px;
+  padding: 16px 26px;
+  background: #BCEC30;
+  border: none;
+  font-family: 'Roboto', sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: #000;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin: 0 auto;
+}
+
+.progressButton:hover {
+  background: #a8d020;
+}
+
+.progressButton:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 768px) {
+  .exercisesGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .workoutPage {
+    padding: 40px 16px 30px;
+  }
+
+  .sectionTitle {
+    font-size: 20px;
+  }
+}

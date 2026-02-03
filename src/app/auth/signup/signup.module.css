@@ -1,0 +1,127 @@
+.modal__btnSignupEnt:hover {
+  background-color: #3f007d;
+  color: #ffffff;
+}
+
+.modal__btnSignupEnt:active {
+  background-color: #271a58;
+}
+
+.modal__logo {
+  width: 220px;
+  height: 35px;
+  margin-bottom: 48px; /* изменено с 34px на 48px */
+  background-color: transparent;
+}
+
+.modal__logo img {
+  width: 220px;
+  height: auto;
+}
+
+.modal__input {
+  width: 280px;
+  height: 52px;
+  border: 1px solid #d0cece;
+  border-radius: 8px;
+  padding: 16px 18px;
+  margin-right: 3px;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+  opacity: 1;
+  font-size: 16px;
+  line-height: 20px;
+}
+
+.modal__input::-webkit-input-placeholder {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: -0.05px;
+  color: #d0cece;
+}
+
+.modal__input:-ms-input-placeholder {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: -0.05px;
+  color: #d0cece;
+}
+
+.modal__input::-ms-input-placeholder {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: -0.05px;
+  color: #d0cece;
+}
+
+.modal__input::placeholder {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: -0.05px;
+  color: #d0cece;
+}
+
+.modal__btnSignupEnt {
+  width: 280px;
+  height: 52px;
+  background-color: #BCEC30;
+  border-radius: 46px;
+  border: none;
+  margin-top: 24px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: -0.05px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.modal__btnSignup {
+  width: 280px;
+  height: 52px;
+  background-color: transparent;
+  border: 1px solid #000000;
+  border-radius: 46px;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 24px;
+  letter-spacing: -0.05px;
+  color: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+}
+
+.modal__btnSignup:hover {
+  background-color: #f4f5f6;
+}
+
+.modal__btnSignup:active {
+  background-color: #d9d9d9;
+}
+
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  color: red;
+}

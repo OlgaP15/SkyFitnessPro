@@ -1,0 +1,226 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modalContent {
+  background: #fff;
+  border-radius: 30px;
+  width: 100%;
+  max-width: 426px;
+  max-height: 595.5px;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.modalTitle {
+  font-family: 'Roboto', sans-serif;
+  font-size: 24px;
+  font-weight: 500;
+  color: #000;
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 32px;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.closeButton:hover {
+  color: #000;
+}
+
+.form {
+  padding: 30px;
+}
+
+.exercisesList {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+.exerciseRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.exerciseLabel {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #000;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.exerciseQuantity {
+  font-size: 14px;
+  color: #666;
+  font-weight: 300;
+}
+
+.inputWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  color: #000;
+  transition: border-color 0.2s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #bcec30;
+}
+
+.inputError {
+  border-color: #f44336;
+}
+
+.inputSuffix {
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  color: #666;
+  white-space: nowrap;
+}
+
+.errorMessage {
+  font-family: 'Roboto', sans-serif;
+  font-size: 12px;
+  color: #f44336;
+  margin-top: -4px;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.cancelButton,
+.saveButton {
+  padding: 12px 24px;
+  border-radius: 46px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid #e0e0e0;
+}
+
+.cancelButton {
+  background: #fff;
+  color: #666;
+}
+
+.cancelButton:hover {
+  background: #f5f5f5;
+  border-color: #ccc;
+}
+
+.saveButton {
+  background: #bcec30;
+  color: #000;
+  border-color: #bcec30;
+}
+
+.saveButton:hover {
+  background: #a8d020;
+  border-color: #a8d020;
+}
+
+.saveButton:active,
+.cancelButton:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 768px) {
+  .modalOverlay {
+    /* Mobile: show as bottom sheet */
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modalContent {
+    max-width: none;
+    width: 100%;
+    max-height: 100dvh;
+    height: auto;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .modalHeader,
+  .form {
+    padding: 20px;
+  }
+
+  .modalTitle {
+    font-size: 20px;
+  }
+
+  .closeButton {
+    width: 44px;
+    height: 44px;
+    font-size: 36px;
+  }
+
+  .modalHeader {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 1;
+  }
+
+  .modalFooter {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .cancelButton,
+  .saveButton {
+    width: 100%;
+  }
+}
